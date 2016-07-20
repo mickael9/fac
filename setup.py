@@ -31,7 +31,7 @@ setup(
 
     keywords='factorio mod manager updater installer',
 
-    packages=['fac'],
+    packages=['fac', 'fac.commands'],
 
     install_requires=['requests', 'appdirs'],
 

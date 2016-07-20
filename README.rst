@@ -16,7 +16,13 @@ Installation can be easilly done using pip:
 
 .. code:: bash
 
-    $ pip3 install -e "git+https://github.com/mickael9/fac.git#egg=fac"
+    $ pip3 install fac-cli
+
+Or directly from git:
+
+.. code:: bash
+
+    $ pip3 install -e "git+https://github.com/mickael9/fac.git#egg=fac-cli"
 
 Or from an existing clone:
 

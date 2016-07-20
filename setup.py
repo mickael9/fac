@@ -4,7 +4,7 @@ with open('README.rst', 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='fac',
+    name='fac-cli',
 
     version='0.1',
 

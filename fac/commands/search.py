@@ -7,7 +7,7 @@ class SearchCommand(Command):
     name = 'search'
 
     arguments = [
-        Arg('query', help='search string'),
+        Arg('query', help='search string', nargs='?'),
 
         Arg('-t', help='filter by tag', nargs='*', dest='tag', default=[]),
 
@@ -30,7 +30,7 @@ class SearchCommand(Command):
 
     def run(self, args):
         for result in self.api.search(
-                query=args.query,
+                query=args.query or '',
                 tags=tuple(args.tag),
                 order=args.sort):
             print('%s\n    %s\n' % (

@@ -16,7 +16,7 @@ Installation can be easilly done using pip:
 
 .. code:: bash
 
-    $ pip3 install -e https://github.com/mickael9/fac.git#egg=fac
+    $ pip3 install -e "git+https://github.com/mickael9/fac.git#egg=fac"
 
 Or from an existing clone:
 

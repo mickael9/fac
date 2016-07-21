@@ -72,7 +72,7 @@ class Config(ConfigParser):
         dirname = os.path.dirname(self.config_file)
 
         if not os.path.isdir(dirname):
-            os.mkdir(dirname)
+            os.makedirs(dirname)
 
         with open(self.config_file, 'w', encoding='utf-8') as f:
             self.write(f)

@@ -8,6 +8,9 @@ class RemoveCommand(Command):
     name = 'remove'
     arguments = [
         Arg('mod', help="Mod pattern to remove ('*' for all)", nargs='+'),
+
+        Arg('-y', '--yes', action='store_true',
+            help='automatic yes to confirmation prompt'),
     ]
 
     def run(self, args):
@@ -19,7 +22,7 @@ class RemoveCommand(Command):
             print('The following files will be removed:')
             for file in files:
                 print('    %s' % file)
-            if prompt('Continue?', 'Y/n') != 'y':
+            if not args.yes and prompt('Continue?', 'Y/n') != 'y':
                 return
 
             for mod_name in args.mod:

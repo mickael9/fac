@@ -13,6 +13,9 @@ class UpdateCommand(Command):
         Arg('-s', '--show', action='store_true',
             help='only show what would be updated'),
 
+        Arg('-y', '--yes', action='store_true',
+            help='automatic yes to confirmation prompt'),
+
         Arg('--force', action='store_true',
             help='force update of held mods'),
     ]
@@ -63,7 +66,7 @@ class UpdateCommand(Command):
             ))
 
         if not args.show:
-            if prompt('Continue?', 'Y/n') != 'y':
+            if not args.yes and prompt('Continue?', 'Y/n') != 'y':
                 return
 
             for local_mod, release in updates:

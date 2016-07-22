@@ -9,7 +9,7 @@ fac
 Installation
 ------------
 
-You'll need to have Python 3 which can be obtained through your distribution's
+You'll need Python 3, which can be obtained through your distribution's
 package manager or downloaded from https://www.python.org/ (for Windows users).
 
 Installation can be easilly done using pip:
@@ -44,10 +44,10 @@ fac needs to be able to know the location of:
  * The Factorio data directory, eg ``/usr/share/factorio/``
  * The Factorio configuration directory, eg ``~/.factorio``
 
-Normally, it should be able to detect these automatically assuming you have a standard setup (eg Steam)
-It will also look in the current and parent directories.
+Normally, it should be able to detect these automatically assuming you have a standard setup (eg. Steam).
+It will also look in the current working directory and its parent.
 
-If for some reason it fails to find these, you'll have to specify them in fac's config file which is located in:
+If for some reason these paths can't be found automatically, you'll have to specify them in fac's config file, which is located at:
 
  * ``~/.config/fac/config.ini`` on Linux
  * ``C:\Users\<username>\AppData\Local\fac\config.ini`` on Windows
@@ -260,4 +260,4 @@ You can also use wildcards:
     Removing: /home/mickael/.factorio/mods/5dim_logistic_0.13.1.zip
     Removing: /home/mickael/.factorio/mods/5dim_core_0.13.1.zip
 
-Note the presence of apostrophes around ``'5dim_*'`` to prevent the shell from interpreting the asterisk.
+Note the presence of quotes around ``'5dim_*'``, to prevent the shell from interpreting the asterisk.

@@ -4,7 +4,6 @@ import json
 from glob import glob
 from zipfile import ZipFile
 from urllib.parse import urljoin
-from pkg_resources import parse_requirements
 
 import requests
 
@@ -48,8 +47,6 @@ class ModManager:
         )
 
     def resolve_remote_requirement(self, req):
-        if isinstance(req, str):
-            req = list(parse_requirements(req))[0]
         spec = req.specifier
         game_ver = self.config.game_version_major
 
@@ -60,8 +57,6 @@ class ModManager:
                 release.game_version == game_ver]
 
     def resolve_local_requirement(self, req):
-        if isinstance(req, str):
-            req = list(parse_requirements(req))[0]
         spec = req.specifier
         game_ver = self.config.game_version_major
 

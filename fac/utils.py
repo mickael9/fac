@@ -1,6 +1,7 @@
+import re
 import sys
 import json
-from collections import UserDict, UserList
+from collections import UserDict, UserList, namedtuple
 
 __all__ = ['JSONList', 'JSONDict', 'prompt']
 
@@ -82,3 +83,27 @@ def prompt(prompt='Continue?', choices='Y/n'):
             return reply
         else:
             print('Please answer with one of %s.' % choices)
+
+
+REQUIREMENT_RE = re.compile(
+    r'^(?P<name>[^<>=!]+)'
+    r'(?P<specifier>(?:==|!=|>=?|<=?).*)?$'
+)
+
+Requirement = namedtuple('Requirement', 'name specifier')
+
+
+def parse_requirement(text):
+    """
+    Parse a requirement such as 'foo>=1.0'.
+
+    Returns a (name, specifier) named tuple.
+    """
+
+    from packaging.specifiers import SpecifierSet
+    match = REQUIREMENT_RE.match(text)
+    if not match:
+        raise ValueError('Invalid requirement: %s' % text)
+    name = match.group('name').strip()
+    spec = SpecifierSet(match.group('specifier') or '')
+    return Requirement(name, spec)

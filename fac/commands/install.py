@@ -1,7 +1,8 @@
-from pkg_resources import parse_version, parse_requirements
+from pkg_resources import parse_version
 
 from fac.commands import Command, Arg
 from fac.api import ModNotFoundError
+from fac.utils import parse_requirement
 
 
 class InstallCommand(Command):
@@ -40,7 +41,7 @@ class InstallCommand(Command):
         to_install = []
 
         for req in args.requirement:
-            req = list(parse_requirements(req))[0]
+            req = parse_requirement(req)
 
             try:
                 releases = self.manager.resolve_remote_requirement(req)
@@ -84,7 +85,11 @@ class InstallCommand(Command):
                 deps_ok = True
 
                 for dep in deps:
-                    depreq = list(parse_requirements(dep))[0]
+                    depreq = parse_requirement(dep)
+
+                    if depreq.name.startswith('?'):
+                        continue  # ignore optional dependency
+
                     if depreq.name == 'base':
                         if self.config.game_version in depreq.specifier:
                             continue

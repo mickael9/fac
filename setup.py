@@ -33,7 +33,7 @@ setup(
 
     packages=['fac', 'fac.commands'],
 
-    install_requires=['requests', 'appdirs'],
+    install_requires=['requests', 'appdirs', 'packaging'],
 
     entry_points={
         'console_scripts': [

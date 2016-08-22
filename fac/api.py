@@ -2,7 +2,6 @@
 
 import requests
 from urllib.parse import quote
-from functools import lru_cache
 
 from fac.utils import JSONDict
 
@@ -21,7 +20,6 @@ class API:
         self.url = base_url.rstrip('/') + '/mods'
         self.session = session or requests.session()
 
-    @lru_cache()
     def search(self,
                query, tags=[],
                order=DEFAULT_ORDER,
@@ -46,7 +44,6 @@ class API:
             if page > pages:
                 break
 
-    @lru_cache()
     def get(self, mod_name):
         resp = self.session.get('%s/%s' % (self.url, quote(mod_name)))
         if resp.status_code == 404:

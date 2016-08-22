@@ -91,6 +91,7 @@ REQUIREMENT_RE = re.compile(
 )
 
 Requirement = namedtuple('Requirement', 'name specifier')
+Requirement.__str__ = lambda self: '%s%s' % (self.name, self.specifier)
 
 
 def parse_requirement(text):

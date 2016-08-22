@@ -35,6 +35,9 @@ class InstallCommand(Command):
         Arg('--downgrade', action='store_true',
             help='allow downgrading mods'),
 
+        Arg('--unpack', action='store_true', default=None,
+            help='unpack mods zip files'),
+
         # Arg('-o', '--install-optdeps', action='store_true',
         #    help='install all optional dependencies'),
 
@@ -61,10 +64,10 @@ class InstallCommand(Command):
                 continue
 
             if not releases:
-                print('No match found for %s' % req)
+                print('No match found for %s' % (req,))
                 continue
 
-            local_mod = self.manager.get_mod_info(req.name)
+            local_mod = self.manager.get_mod(req.name)
 
             for release in releases:
                 if local_mod:
@@ -122,6 +125,7 @@ class InstallCommand(Command):
                         print('Dependency can not be met: %s' % depreq)
                         deps_ok = False
                         break
+
                     # FIXME: we only try the first release here
                     deprel = rels[0]
                     print('Adding dependency: %s %s' % (
@@ -139,4 +143,4 @@ class InstallCommand(Command):
                 release.info_json.name, release.version
             ))
 
-            self.manager.install_mod(release)
+            self.manager.install_mod(release, unpack=args.unpack)

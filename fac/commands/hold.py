@@ -11,7 +11,7 @@ class HoldCommand(Command):
 
     def run(self, args):
         for name in args.mod:
-            installed = self.manager.get_mod_files(name)
+            installed = self.manager.get_mod(name)
 
             if not installed:
                 print('%s is not installed.' % name)

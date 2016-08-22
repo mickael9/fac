@@ -16,12 +16,15 @@ class UpdateCommand(Command):
         Arg('-y', '--yes', action='store_true',
             help='automatic yes to confirmation prompt'),
 
+        Arg('--unpacked', action='store_true',
+            help='allow updating unpacked mods'),
+
         Arg('--held', action='store_true',
             help='allow updating held mods'),
     ]
 
     def run(self, args):
-        installed = self.manager.get_installed_mods()
+        installed = self.manager.get_mods()
         updates = []
         game_ver = self.config.game_version_major
 
@@ -43,11 +46,23 @@ class UpdateCommand(Command):
                 local_ver = parse_version(local_mod.version)
 
                 if release_ver > local_ver:
+                    print('Found update: %s %s' % (
+                        local_mod.name, release.version)
+                    )
+
+                    if not args.unpacked and not local_mod.packed:
+                        print('%s is unpacked. '
+                              'Use --unpacked to update it anyway.' % (
+                                  local_mod.name
+                        ))
+                        continue
+
                     if not args.held and local_mod.name in self.config.hold:
                         print('%s is held. '
                               'Use --held to update it anyway.' %
                               local_mod.name)
                         break
+
                     updates.append((local_mod, release))
                     break
 

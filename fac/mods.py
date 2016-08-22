@@ -1,5 +1,7 @@
 import os.path
+import shutil
 import json
+from pathlib import Path
 
 from glob import glob
 from zipfile import ZipFile
@@ -10,6 +12,159 @@ import requests
 from fac.files import JSONFile
 from fac.utils import JSONDict
 from fac.api import AuthError
+
+
+class Mod:
+    location = None
+
+    def __init__(self, manager, location):
+        self.manager = manager
+        self.location = location
+
+    def get_enabled(self):
+        return self.manager.is_mod_enabled(self.name)
+
+    def set_enabled(self, val):
+        self.manager.set_mod_enabled(self.name, val)
+
+    enabled = property(get_enabled, set_enabled)
+
+    @property
+    def name(self):
+        return self.info.name
+
+    @property
+    def version(self):
+        return self.info.version
+
+    def _check_valid(self):
+        expected_basename = "%s_%s" % (self.name, self.version)
+
+        assert self.basename == expected_basename, \
+            "Invalid file name %s, expected %s" % (
+                    self.basename,
+                    expected_basename
+            )
+
+    @classmethod
+    def _find(cls, pattern, manager, name, version):
+        name = name or '*'
+        version = version or '*'
+
+        files = glob(
+            os.path.join(
+                manager.config.mods_path,
+                pattern % (name, version)
+            )
+        )
+        for file in files:
+            try:
+                mod = cls(manager, file)
+                yield mod
+            except Exception as ex:
+                print('Warning: invalid mod %s: %s' % (file, ex))
+
+
+class ZippedMod(Mod):
+    packed = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.basename = os.path.splitext(
+                os.path.basename(
+                    self.location
+                )
+        )[0]
+        self._check_valid()
+
+    def remove(self):
+        print('Removing file: %s' % self.location)
+        os.remove(self.location)
+
+    @property
+    def info(self):
+        with ZipFile(self.location) as f:
+            info = json.loads(
+                    f.read(
+                        '%s/info.json' % self.basename,
+                        ).decode('utf-8'),
+                    )
+            return JSONDict(info)
+
+    def unpack(self):
+        mod_directory = self.manager.config.mods_path
+        unpacked_location = os.path.join(mod_directory, self.basename)
+
+        print('Unpacking: %s' % self.location)
+
+        with ZipFile(self.location) as f:
+            os.makedirs(unpacked_location)
+
+            for info in f.infolist():
+                if not info.filename.startswith(self.basename + '/'):
+                    print("Warning: out-of-directory file %s ignored" % (
+                        info.filename))
+                    continue
+                f.extract(info, mod_directory)
+
+        self.remove()
+        return UnpackedMod(self.manager, unpacked_location)
+
+    @classmethod
+    def find(cls, *args, **kwargs):
+        return cls._find("%s_%s.zip", *args, **kwargs)
+
+
+class UnpackedMod(Mod):
+    packed = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.basename = os.path.basename(
+            os.path.realpath(
+                self.location
+            )
+        )
+        self._check_valid()
+
+    def remove(self):
+        print('Removing directory: %s' % self.location)
+        shutil.rmtree(self.location)
+
+    @property
+    def info(self):
+        path = os.path.join(self.location, 'info.json')
+        return JSONFile(path)
+
+    def pack(self):
+        packed_location = os.path.join(
+            self.manager.config.mods_path,
+            self.basename + '.zip'
+        )
+
+        print('Packing: %s' % self.location)
+
+        if os.path.exists(packed_location):
+            raise Exception("File already exists: %s" % packed_location)
+
+        with ZipFile(packed_location, "w") as f:
+            for root, dirs, files in os.walk(self.location):
+                zip_root = Path(root).relative_to(
+                    self.manager.config.mods_path).as_posix()
+
+                for file_name in files:
+                    f.write(
+                        '%s/%s' % (root, file_name),
+                        '%s/%s' % (zip_root, file_name),
+                    )
+
+        self.remove()
+
+        return ZippedMod(self.manager, packed_location)
+
+    @classmethod
+    def find(cls, *args, **kwargs):
+        return cls._find("%s_%s/", *args, **kwargs)
 
 
 class ModManager:
@@ -26,25 +181,20 @@ class ModManager:
         )
 
     def get_mod_json(self, name):
+        """Return the mod json configuration from mods-list.json"""
+
         for mod in self.mods_json.mods:
             if mod.name == name:
                 return mod
 
-    def get_mod_info(self, name):
-        for mod in self.get_installed_mods():
+    def get_mod(self, name):
+        for mod in self.get_mods(name):
             if mod.name == name:
                 return mod
 
-    def get_mod_files(self, name=None, version=None):
-        name = name or '*'
-        version = version or '*'
-
-        return glob(
-            os.path.join(
-                self.config.mods_path,
-                '%s_%s.zip' % (name, version)
-            )
-        )
+    def get_mods(self, name=None, version=None):
+        for mod_type in (ZippedMod, UnpackedMod):
+            yield from mod_type.find(self, name, version)
 
     def resolve_remote_requirement(self, req):
         spec = req.specifier
@@ -63,22 +213,6 @@ class ModManager:
         return [info for info in self.get_installed_mods(req.name)
                 if info.version in spec and
                 info.factorio_version == game_ver]
-
-    def get_installed_mods(self, name=None, version=None):
-        zips = self.get_mod_files(name, version)
-
-        for zipname in zips:
-            basename = os.path.splitext(
-                os.path.basename(zipname)
-            )[0]
-
-            with ZipFile(zipname) as f:
-                info = json.loads(
-                    f.read(
-                        '%s/info.json' % basename,
-                    ).decode('utf-8'),
-                )
-                yield JSONDict(info)
 
     def is_mod_enabled(self, name):
         mod = self.get_mod_json(name)
@@ -147,13 +281,20 @@ class ModManager:
             player_data.save()
         return player_data
 
-    def install_mod(self, release, enable=None):
+    def install_mod(self, release, enable=None, unpack=None):
         file_name = release.file_name
         mod_name = release.info_json.name
 
         assert '/' not in file_name
         assert '\\' not in file_name
         assert file_name.endswith('.zip')
+
+        try:
+            installed_mod = next(self.get_mods(mod_name))
+            if unpack is None:
+                unpack = not installed_mod.packed
+        except StopIteration:
+            installed_mod = None
 
         player_data = self.require_login()
         url = urljoin(self.api.base_url, release.download_url)
@@ -181,19 +322,20 @@ class ModManager:
         with open(file_path, 'wb') as f:
             f.write(data)
 
+        mod = ZippedMod(self, file_path)
+
+        if installed_mod and (installed_mod.basename != mod.basename or
+                              not installed_mod.packed):
+            installed_mod.remove()
+
         if enable is not None:
-            self.set_mod_enabled(mod_name, enable)
+            mod.enabled = enable
 
-        for mod in self.get_installed_mods():
-            if mod.name != mod_name or mod.version == release.version:
-                continue
-            self.uninstall_mod(mod.name, mod.version)
+        if unpack:
+            mod.unpack()
 
-    def uninstall_mod(self, name, version=None):
-        files_to_remove = self.get_mod_files(name=name, version=version)
+    def uninstall_mods(self, name, version=None):
+        mods_to_remove = self.get_mods(name=name, version=version)
 
-        for file in files_to_remove:
-            print('Removing: %s' % file)
-            os.remove(file)
-
-        return files_to_remove
+        for mod in mods_to_remove:
+            mod.remove()

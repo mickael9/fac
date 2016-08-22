@@ -14,18 +14,19 @@ class RemoveCommand(Command):
     ]
 
     def run(self, args):
-        files = []
-        for mod_name in args.mod:
-            files += self.manager.get_mod_files(mod_name)
+        mods = []
+        for mod_pattern in args.mod:
+            mods.extend(self.manager.get_mods(mod_pattern))
 
-        if files:
-            print('The following files will be removed:')
-            for file in files:
-                print('    %s' % file)
+        if mods:
+            print('The following mods will be removed:')
+            for mod in mods:
+                print('    %s' % mod.location)
+
             if not args.yes and prompt('Continue?', 'Y/n') != 'y':
                 return
 
-            for mod_name in args.mod:
-                self.manager.uninstall_mod(mod_name)
+            for mod in mods:
+                mod.remove()
         else:
-            print('No matching files.')
+            print('No matching mods.')

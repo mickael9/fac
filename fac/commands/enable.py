@@ -8,12 +8,12 @@ class EnableDisableCommand(Command):
 
     def run(self, args):
         for mod_name in args.mods:
-            mod_info = self.manager.get_mod_info(mod_name)
+            mod = self.manager.get_mod(mod_name)
             mod_json = self.manager.get_mod_json(mod_name)
 
-            if not (mod_info or mod_json):
+            if not (mod or mod_json):
                 print('Mod %s does not exist' % mod_name)
-                return
+                continue
 
             enabled = self.name == 'enable'
             if not self.manager.set_mod_enabled(mod_name, enabled):

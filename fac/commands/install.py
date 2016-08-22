@@ -26,8 +26,14 @@ class InstallCommand(Command):
         Arg('requirement', nargs='+',
             help='requirement ("name", "name>=1.0", "name==1.2", ...)'),
 
-        Arg('--force', action='store_true',
-            help='force (re)installation of mods'),
+        Arg('--held', action='store_true',
+            help='allow updating held mods'),
+
+        Arg('--reinstall', action='store_true',
+            help='allow reinstalling mods'),
+
+        Arg('--downgrade', action='store_true',
+            help='allow downgrading mods'),
 
         # Arg('-o', '--install-optdeps', action='store_true',
         #    help='install all optional dependencies'),
@@ -49,9 +55,9 @@ class InstallCommand(Command):
                 print('%s: this mod does not exist.' % req.name)
                 continue
 
-            if not args.force and req.name in self.config.hold:
+            if not args.held and req.name in self.config.hold:
                 print('%s is held. '
-                      'Use --force to install it anyway.' % (req.name))
+                      'Use --held to install it anyway.' % (req.name))
                 continue
 
             if not releases:
@@ -65,16 +71,19 @@ class InstallCommand(Command):
                     local_ver = parse_version(local_mod.version)
                     release_ver = parse_version(release.version)
 
-                    if not args.force and release_ver == local_ver:
+                    if not args.reinstall and release_ver == local_ver:
                         print('%s==%s is already installed. '
-                              'Use --force to reinstall it.' % (
+                              'Use --reinstall to reinstall it.' % (
                                   local_mod.name, local_ver))
                         break
 
-                    elif not args.force and release_ver < local_ver:
+                    elif not args.downgrade and release_ver < local_ver:
                         print(
                             '%s is already installed in a more recent version.'
-                            ' Use --force to downgrade it.' % local_mod.name)
+                            ' Use --downgrade to downgrade it.' % (
+                                local_mod.name
+                            )
+                        )
                         break
 
                 if args.no_deps:

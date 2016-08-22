@@ -16,8 +16,8 @@ class UpdateCommand(Command):
         Arg('-y', '--yes', action='store_true',
             help='automatic yes to confirmation prompt'),
 
-        Arg('--force', action='store_true',
-            help='force update of held mods'),
+        Arg('--held', action='store_true',
+            help='allow updating held mods'),
     ]
 
     def run(self, args):
@@ -43,9 +43,9 @@ class UpdateCommand(Command):
                 local_ver = parse_version(local_mod.version)
 
                 if release_ver > local_ver:
-                    if not args.force and local_mod.name in self.config.hold:
+                    if not args.held and local_mod.name in self.config.hold:
                         print('%s is held. '
-                              'Use --force to update it anyway.' %
+                              'Use --held to update it anyway.' %
                               local_mod.name)
                         break
                     updates.append((local_mod, release))

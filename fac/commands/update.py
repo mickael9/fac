@@ -16,10 +16,10 @@ class UpdateCommand(Command):
         Arg('-y', '--yes', action='store_true',
             help='automatic yes to confirmation prompt'),
 
-        Arg('--unpacked', action='store_true',
+        Arg('--unpacked', '-U', action='store_true',
             help='allow updating unpacked mods'),
 
-        Arg('--held', action='store_true',
+        Arg('--held', '-H', action='store_true',
             help='allow updating held mods'),
     ]
 
@@ -52,14 +52,14 @@ class UpdateCommand(Command):
 
                     if not args.unpacked and not local_mod.packed:
                         print('%s is unpacked. '
-                              'Use --unpacked to update it anyway.' % (
+                              'Use -U to update it anyway.' % (
                                   local_mod.name
                         ))
                         continue
 
                     if not args.held and local_mod.name in self.config.hold:
                         print('%s is held. '
-                              'Use --held to update it anyway.' %
+                              'Use -H to update it anyway.' %
                               local_mod.name)
                         break
 

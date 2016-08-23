@@ -26,16 +26,16 @@ class InstallCommand(Command):
         Arg('requirement', nargs='+',
             help='requirement ("name", "name>=1.0", "name==1.2", ...)'),
 
-        Arg('--held', action='store_true',
+        Arg('--held', '-H', action='store_true',
             help='allow updating held mods'),
 
-        Arg('--reinstall', action='store_true',
+        Arg('--reinstall', '-R', action='store_true',
             help='allow reinstalling mods'),
 
-        Arg('--downgrade', action='store_true',
+        Arg('--downgrade', '-D', action='store_true',
             help='allow downgrading mods'),
 
-        Arg('--unpack', action='store_true', default=None,
+        Arg('--unpack', '-U', action='store_true', default=None,
             help='unpack mods zip files'),
 
         # Arg('-o', '--install-optdeps', action='store_true',
@@ -60,7 +60,7 @@ class InstallCommand(Command):
 
             if not args.held and req.name in self.config.hold:
                 print('%s is held. '
-                      'Use --held to install it anyway.' % (req.name))
+                      'Use -H to install it anyway.' % (req.name))
                 continue
 
             if not releases:
@@ -76,14 +76,14 @@ class InstallCommand(Command):
 
                     if not args.reinstall and release_ver == local_ver:
                         print('%s==%s is already installed. '
-                              'Use --reinstall to reinstall it.' % (
+                              'Use -R to reinstall it.' % (
                                   local_mod.name, local_ver))
                         break
 
                     elif not args.downgrade and release_ver < local_ver:
                         print(
                             '%s is already installed in a more recent version.'
-                            ' Use --downgrade to downgrade it.' % (
+                            ' Use -D to downgrade it.' % (
                                 local_mod.name
                             )
                         )

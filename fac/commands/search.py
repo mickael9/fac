@@ -33,5 +33,13 @@ class SearchCommand(Command):
                 query=args.query or '',
                 tags=tuple(args.tag),
                 order=args.sort):
-            print('%s\n    %s\n' % (
-                result.name, result.summary.replace('\n', '')))
+
+            if result.tags:
+                tags = ' [%s]' % (', '.join(tag.name for tag in result.tags))
+            else:
+                tags = ''
+
+            print('%s (%s)%s\n    %s\n' % (
+                result.title, result.name,
+                tags,
+                result.summary.replace('\n', '')))

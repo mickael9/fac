@@ -57,7 +57,8 @@ class API:
     def get(self, mod_name):
         resp = self.session.get('%s/%s' % (self.url, quote(mod_name)))
         if resp.status_code == 404:
-            raise ModNotFoundError("Mod not found: %s" % mod_name)
+            raise ModNotFoundError(
+                "'%s' is not on the mod portal" % mod_name)
         else:
             resp.raise_for_status()
 

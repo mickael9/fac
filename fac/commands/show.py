@@ -21,8 +21,8 @@ class ShowCommand(Command):
             mod = self.manager.resolve_mod_name(mod, remote=True)
             try:
                 m = self.api.get(mod)
-            except ModNotFoundError:
-                print('Error: Mod %s does not exist' % mod)
+            except ModNotFoundError as ex:
+                print('Error: %s' % ex)
                 continue
 
             print('Name: %s' % m.name)

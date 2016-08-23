@@ -32,10 +32,8 @@ class UpdateCommand(Command):
             print('Checking: %s' % local_mod.name)
             try:
                 remote_mod = self.api.get(local_mod.name)
-            except ModNotFoundError:
-                print('Warning: %s not found in the mod database.' % (
-                    local_mod.name
-                ))
+            except ModNotFoundError as ex:
+                print('Warning: %s' % ex)
                 continue
 
             for release in remote_mod.releases:

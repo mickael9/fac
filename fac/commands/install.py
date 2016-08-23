@@ -57,8 +57,8 @@ class InstallCommand(Command):
 
             try:
                 releases = self.manager.resolve_remote_requirement(req)
-            except ModNotFoundError:
-                print('%s: this mod does not exist.' % req.name)
+            except ModNotFoundError as ex:
+                print("Error: %s" % ex)
                 continue
 
             if not args.held and req.name in self.config.hold:

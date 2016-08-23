@@ -319,11 +319,13 @@ class ModManager:
 
     def set_mod_enabled(self, name, enabled=True):
         mod = self.get_mod_json(name)
+
         if not mod:
             mod = {'enabled': '', 'name': name}
             self.mods_json.mods.append(mod)
+            mod = self.get_mod_json(name)
 
-        if enabled != mod.enabled:
+        if enabled != (mod.enabled == 'true'):
             mod.enabled = 'true' if enabled else 'false'
             self.mods_json.save()
             return True

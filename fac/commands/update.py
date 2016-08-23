@@ -6,7 +6,7 @@ from fac.utils import prompt
 
 
 class UpdateCommand(Command):
-    'Update installed mods'
+    'Update installed mods.'
 
     name = 'update'
     arguments = [
@@ -51,10 +51,12 @@ class UpdateCommand(Command):
                     )
 
                     if not args.unpacked and not local_mod.packed:
-                        print('%s is unpacked. '
-                              'Use -U to update it anyway.' % (
-                                  local_mod.name
-                        ))
+                        print(
+                            '%s is unpacked. '
+                            'Use -U to update it anyway.' % (
+                                local_mod.name
+                            )
+                        )
                         continue
 
                     if not args.held and local_mod.name in self.config.hold:

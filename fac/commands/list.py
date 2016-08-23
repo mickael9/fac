@@ -2,7 +2,7 @@ from fac.commands import Command
 
 
 class ListCommand(Command):
-    'List installed mods and their status'
+    'List installed mods and their status.'
 
     name = 'list'
 

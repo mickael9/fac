@@ -2,7 +2,7 @@ from fac.commands import Command, Arg
 
 
 class SearchCommand(Command):
-    'Search the mods database'
+    'Search the mods database.'
 
     name = 'search'
 

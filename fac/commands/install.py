@@ -7,7 +7,7 @@ from fac.utils import parse_requirement, Requirement
 
 class InstallCommand(Command):
     '''
-    Install (or update) mods
+    Install (or update) mods.
 
     This will install mods matching the given requirements using this format:
         name
@@ -23,8 +23,9 @@ class InstallCommand(Command):
     name = 'install'
 
     arguments = [
-        Arg('requirement', nargs='+',
-            help='requirement ("name", "name>=1.0", "name==1.2", ...)'),
+        Arg('requirements', nargs='+',
+            help='requirements to install '
+                 '("name", "name>=1.0", "name==1.2", ...)'),
 
         Arg('--held', '-H', action='store_true',
             help='allow updating held mods'),
@@ -49,7 +50,7 @@ class InstallCommand(Command):
         # TODO: handle optional dependencies
         to_install = []
 
-        for req in args.requirement:
+        for req in args.requirements:
             name, spec = parse_requirement(req)
             name = self.manager.resolve_mod_name(name, remote=True)
             req = Requirement(name, spec)

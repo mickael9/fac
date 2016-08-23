@@ -2,15 +2,15 @@ from fac.commands import Command, Arg
 
 
 class HoldCommand(Command):
-    'Hold mods (show held mods with no argument)'
+    'Hold mods (show held mods with no argument).'
 
     name = 'hold'
     arguments = [
-        Arg('mod', help='Mod to hold', nargs='*'),
+        Arg('mods', help='mods to hold', nargs='*'),
     ]
 
     def run(self, args):
-        for name in args.mod:
+        for name in args.mods:
             name = self.manager.resolve_mod_name(name)
             installed = self.manager.get_mod(name)
 
@@ -25,7 +25,7 @@ class HoldCommand(Command):
                       name)
             else:
                 print('%s is already held' % name)
-        if not args.mod:
+        if not args.mods:
             if self.config.hold:
                 print('Mods currently held:')
                 for name in self.config.hold:
@@ -35,15 +35,15 @@ class HoldCommand(Command):
 
 
 class UnholdCommand(Command):
-    'Unhold mods'
+    'Unhold mods.'
 
     name = 'unhold'
     arguments = [
-        Arg('mod', help='Mod to unhold', nargs='+'),
+        Arg('mods', help='mods to unhold', nargs='+'),
     ]
 
     def run(self, args):
-        for name in args.mod:
+        for name in args.mods:
             name = self.manager.resolve_mod_name(name)
             if name in self.config.hold:
                 hold = self.config.hold

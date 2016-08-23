@@ -3,11 +3,11 @@ from fac.utils import prompt
 
 
 class RemoveCommand(Command):
-    'Remove mods'
+    'Remove mods.'
 
     name = 'remove'
     arguments = [
-        Arg('mod', help="Mod pattern to remove ('*' for all)", nargs='+'),
+        Arg('mods', help="mod patterns to remove ('*' for all)", nargs='+'),
 
         Arg('-y', '--yes', action='store_true',
             help='automatic yes to confirmation prompt'),
@@ -21,10 +21,10 @@ class RemoveCommand(Command):
 
     def run(self, args):
         mods = []
-        for mod_pattern in args.mod:
+        for mod_pattern in args.mods:
             mod_pattern = self.manager.resolve_mod_name(mod_pattern)
             matches = list(self.manager.find_mods(mod_pattern,
-                                                 packed=args.packed))
+                                                  packed=args.packed))
             mods.extend(matches)
             if not matches:
                 print('No match found for %s.' % mod_pattern)

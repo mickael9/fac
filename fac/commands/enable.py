@@ -3,7 +3,7 @@ from fac.commands import Command, Arg
 
 class EnableDisableCommand(Command):
     arguments = [
-        Arg('mods', nargs='+', help='Mods to affect'),
+        Arg('mods', nargs='+', help='mods to affect'),
     ]
 
     def run(self, args):
@@ -24,12 +24,12 @@ class EnableDisableCommand(Command):
 
 
 class EnableCommand(EnableDisableCommand):
-    'Enable mods'
+    'Enable mods.'
 
     name = 'enable'
 
 
 class DisableCommand(EnableDisableCommand):
-    'Disable mods'
+    'Disable mods.'
 
     name = 'disable'

@@ -38,13 +38,12 @@ class PackUnpackCommand(Command):
 
 
 class PackCommand(PackUnpackCommand):
-    'Pack mods'
+    'Pack mods.'
 
     name = 'pack'
 
 
 class UnpackCommand(PackUnpackCommand):
-    'Unpack mods'
+    'Unpack mods.'
 
     name = 'unpack'
-

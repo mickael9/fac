@@ -3,16 +3,16 @@ from fac.api import ModNotFoundError
 
 
 class ShowCommand(Command):
-    'Show details about specific mods'
+    'Show details about specific mods.'
 
     name = 'show'
     arguments = [
-        Arg('mod', help='Mod name', nargs='+'),
+        Arg('mods', help='mods to show', nargs='+'),
     ]
 
     def run(self, opts):
         first = True
-        for mod in opts.mod:
+        for mod in opts.mods:
             if first:
                 first = False
             else:

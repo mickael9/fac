@@ -300,6 +300,12 @@ class ModManager:
             if mod.name.lower() == name.lower():
                 return mod.name
 
+        # Find a local partial match (case-insensitive)
+        partial_matches = [mod for mod in local_mods
+                           if name.lower() in mod.name.lower()]
+        if len(partial_matches) == 1:
+            return partial_matches[0].name
+
         if remote:
             # Find a remote match (case-insensitive)
             remote_mods = list(self.api.search(name, page_size=5, limit=5))

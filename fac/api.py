@@ -1,7 +1,9 @@
 '''Helper classes to access the Factorio Mod API'''
 
-import requests
 from urllib.parse import quote
+from functools import lru_cache
+
+import requests
 
 from fac.utils import JSONDict
 
@@ -44,6 +46,7 @@ class API:
             if page > pages:
                 break
 
+    @lru_cache()
     def get(self, mod_name):
         resp = self.session.get('%s/%s' % (self.url, quote(mod_name)))
         if resp.status_code == 404:

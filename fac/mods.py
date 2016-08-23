@@ -210,7 +210,7 @@ class ModManager:
         spec = req.specifier
         game_ver = self.config.game_version_major
 
-        return [info for info in self.get_installed_mods(req.name)
+        return [info for info in self.get_mods(req.name)
                 if info.version in spec and
                 info.factorio_version == game_ver]
 

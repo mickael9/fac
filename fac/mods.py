@@ -66,6 +66,15 @@ class Mod:
 
 
 class ZippedMod(Mod):
+    """
+    A zipped mod consists of a strictly named name_version.zip file.
+
+    The top-level directory of the first zip entry must
+    contain the info.json file and other mod files.
+
+    Any subsequent top-level directories will be ignored.
+    """
+
     packed = True
 
     def __init__(self, *args, **kwargs):
@@ -75,21 +84,28 @@ class ZippedMod(Mod):
                     self.location
                 )
         )[0]
+        self._read_info()
         self._check_valid()
 
     def remove(self):
         print('Removing file: %s' % self.location)
         os.remove(self.location)
 
-    @property
-    def info(self):
+    def _read_info(self):
         with ZipFile(self.location) as f:
+            first_entry = f.namelist()[0]
+            self.toplevel = first_entry.split('/')[0]
+
+            if not self.toplevel:
+                raise Exception('Could not find a top-level directory')
+
             info = json.loads(
-                    f.read(
-                        '%s/info.json' % self.basename,
-                        ).decode('utf-8'),
-                    )
-            return JSONDict(info)
+                f.read(
+                    '%s/info.json' % self.toplevel,
+                ).decode('utf-8'),
+            )
+
+            self.info = JSONDict(info)
 
     def unpack(self):
         mod_directory = self.manager.config.mods_path
@@ -100,15 +116,51 @@ class ZippedMod(Mod):
         with ZipFile(self.location) as f:
             os.makedirs(unpacked_location)
 
-            for info in f.infolist():
-                if not info.filename.startswith(self.basename + '/'):
-                    print("Warning: out-of-directory file %s ignored" % (
-                        info.filename))
+            for arcname in f.namelist():
+                if not arcname.startswith(self.toplevel + '/'):
+                    print("Warning: out-of-place file %s ignored" % (
+                        arcname))
                     continue
-                f.extract(info, mod_directory)
+
+                dest = arcname[len(self.toplevel) + 1:]
+                dest = self._sanitize_arcname(dest)
+                dest = os.path.join(unpacked_location, dest)
+                self._extract_member(f, arcname, dest)
 
         self.remove()
         return UnpackedMod(self.manager, unpacked_location)
+
+    def _sanitize_arcname(self, arcname):
+        arcname = arcname.replace('/', os.path.sep)
+
+        if os.path.altsep:
+            arcname = arcname.replace(os.path.altsep, os.path.sep)
+        # interpret absolute pathname as relative, remove drive letter or
+        # UNC path, redundant separators, "." and ".." components.
+        arcname = os.path.splitdrive(arcname)[1]
+        invalid_path_parts = ('', os.path.curdir, os.path.pardir)
+        arcname = os.path.sep.join(x for x in arcname.split(os.path.sep)
+                                   if x not in invalid_path_parts)
+        if os.path.sep == '\\':
+            # filter illegal characters on Windows
+            arcname = ZipFile._sanitize_windows_name(arcname, os.path.sep)
+
+        return arcname
+
+    def _extract_member(self, zipfile, arcname, dest):
+        # Create all upper directories if necessary.
+        upperdirs = os.path.dirname(dest)
+        if upperdirs and not os.path.exists(upperdirs):
+            os.makedirs(upperdirs)
+
+        if arcname[-1] == '/':
+            if not os.path.isdir(dest):
+                os.mkdir(dest)
+            return
+
+        with zipfile.open(arcname) as source, \
+                open(dest, "wb") as target:
+            shutil.copyfileobj(source, target)
 
     @classmethod
     def find(cls, *args, **kwargs):
@@ -125,16 +177,16 @@ class UnpackedMod(Mod):
                 self.location
             )
         )
+        self._read_info()
         self._check_valid()
 
     def remove(self):
         print('Removing directory: %s' % self.location)
         shutil.rmtree(self.location)
 
-    @property
-    def info(self):
+    def _read_info(self):
         path = os.path.join(self.location, 'info.json')
-        return JSONFile(path)
+        self.info = JSONFile(path)
 
     def pack(self):
         packed_location = os.path.join(

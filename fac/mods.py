@@ -108,27 +108,39 @@ class ZippedMod(Mod):
 
             self.info = JSONDict(info)
 
-    def unpack(self):
+    def unpack(self, replace=False, keep=False):
         mod_directory = self.manager.config.mods_path
         unpacked_location = os.path.join(mod_directory, self.basename)
+
+        assert (os.path.sep not in self.basename and not (
+                os.path.altsep and os.path.altsep in self.basename)), \
+            "Unsafe mod directory name: %s" % self.basename
 
         print('Unpacking: %s' % self.location)
 
         with ZipFile(self.location) as f:
+            if replace and os.path.isdir(unpacked_location):
+                shutil.rmtree(unpacked_location)
+
             os.makedirs(unpacked_location)
 
-            for arcname in f.namelist():
-                if not arcname.startswith(self.toplevel + '/'):
-                    print("Warning: out-of-place file %s ignored" % (
-                        arcname))
-                    continue
+            try:
+                for arcname in f.namelist():
+                    if not arcname.startswith(self.toplevel + '/'):
+                        print("Warning: out-of-place file %s ignored" % (
+                            arcname))
+                        continue
 
-                dest = arcname[len(self.toplevel) + 1:]
-                dest = self._sanitize_arcname(dest)
-                dest = os.path.join(unpacked_location, dest)
-                self._extract_member(f, arcname, dest)
+                    dest = arcname[len(self.toplevel) + 1:]
+                    dest = self._sanitize_arcname(dest)
+                    dest = os.path.join(unpacked_location, dest)
+                    self._extract_member(f, arcname, dest)
+            except:
+                shutil.rmtree(unpacked_location)
+                raise
 
-        self.remove()
+        if not keep:
+            self.remove()
         return UnpackedMod(self.manager, unpacked_location)
 
     def _sanitize_arcname(self, arcname):
@@ -189,7 +201,7 @@ class UnpackedMod(Mod):
         path = os.path.join(self.location, 'info.json')
         self.info = JSONFile(path)
 
-    def pack(self):
+    def pack(self, replace=False, keep=False):
         packed_location = os.path.join(
             self.manager.config.mods_path,
             self.basename + '.zip'
@@ -197,21 +209,27 @@ class UnpackedMod(Mod):
 
         print('Packing: %s' % self.location)
 
-        if os.path.exists(packed_location):
+        if not replace and os.path.exists(packed_location):
             raise Exception("File already exists: %s" % packed_location)
 
         with ZipFile(packed_location, "w") as f:
-            for root, dirs, files in os.walk(self.location):
-                zip_root = Path(root).relative_to(
-                    self.manager.config.mods_path).as_posix()
+            try:
+                for root, dirs, files in os.walk(self.location):
+                    zip_root = Path(root).relative_to(
+                        self.manager.config.mods_path).as_posix()
 
-                for file_name in files:
-                    f.write(
-                        '%s/%s' % (root, file_name),
-                        '%s/%s' % (zip_root, file_name),
-                    )
+                    for file_name in files:
+                        f.write(
+                            '%s/%s' % (root, file_name),
+                            '%s/%s' % (zip_root, file_name),
+                        )
+            except:
+                f.close()
+                os.remove(packed_location)
+                raise
 
-        self.remove()
+        if not keep:
+            self.remove()
 
         return ZippedMod(self.manager, packed_location)
 
@@ -240,13 +258,15 @@ class ModManager:
             if mod.name == name:
                 return mod
 
-    def get_mod(self, name):
-        for mod in self.get_mods(name):
+    def get_mod(self, name, *args, **kwargs):
+        for mod in self.get_mods(name, *args, **kwargs):
             if mod.name == name:
                 return mod
 
-    def get_mods(self, name=None, version=None):
+    def get_mods(self, name=None, version=None, packed=None):
         for mod_type in (ZippedMod, UnpackedMod):
+            if packed is not None and mod_type.packed != bool(packed):
+                continue
             yield from mod_type.find(self, name, version)
 
     def resolve_mod_name(self, name, remote=False):

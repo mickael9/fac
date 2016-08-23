@@ -11,13 +11,20 @@ class RemoveCommand(Command):
 
         Arg('-y', '--yes', action='store_true',
             help='automatic yes to confirmation prompt'),
+
+        Arg('--unpacked', '-U', action='store_false', dest='packed',
+            default=None, help='only remove unpacked mods'),
+
+        Arg('--packed', '-P', action='store_true', dest='packed',
+            default=None, help='only remove packed mods',),
     ]
 
     def run(self, args):
         mods = []
         for mod_pattern in args.mod:
             mod_pattern = self.manager.resolve_mod_name(mod_pattern)
-            matches = list(self.manager.get_mods(mod_pattern))
+            matches = list(self.manager.get_mods(mod_pattern,
+                                                 packed=args.packed))
             mods.extend(matches)
             if not matches:
                 print('No match found for %s.' % mod_pattern)

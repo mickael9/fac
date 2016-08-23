@@ -9,3 +9,4 @@ import fac.commands.update
 import fac.commands.remove
 import fac.commands.hold
 import fac.commands.pack
+import fac.commands.fetch

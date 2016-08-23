@@ -85,6 +85,9 @@ class ZippedMod(Mod):
                     self.location
                 )
         )[0]
+        self.parent = os.path.realpath(
+            os.path.dirname(self.location)
+        )
         self._read_info()
         self._check_valid()
 
@@ -109,8 +112,7 @@ class ZippedMod(Mod):
             self.info = JSONDict(info)
 
     def unpack(self, replace=False, keep=False):
-        mod_directory = self.manager.config.mods_path
-        unpacked_location = os.path.join(mod_directory, self.basename)
+        unpacked_location = os.path.join(self.parent, self.basename)
 
         assert (os.path.sep not in self.basename and not (
                 os.path.altsep and os.path.altsep in self.basename)), \
@@ -190,6 +192,10 @@ class UnpackedMod(Mod):
                 self.location
             )
         )
+        self.parent = os.path.realpath(
+            os.path.join(self.location, '..')
+        )
+
         self._read_info()
         self._check_valid()
 
@@ -203,7 +209,7 @@ class UnpackedMod(Mod):
 
     def pack(self, replace=False, keep=False):
         packed_location = os.path.join(
-            self.manager.config.mods_path,
+            self.parent,
             self.basename + '.zip'
         )
 
@@ -216,7 +222,7 @@ class UnpackedMod(Mod):
             try:
                 for root, dirs, files in os.walk(self.location):
                     zip_root = Path(root).relative_to(
-                        self.manager.config.mods_path).as_posix()
+                        self.parent).as_posix()
 
                     for file_name in files:
                         f.write(
@@ -400,20 +406,35 @@ class ModManager:
         return player_data
 
     def install_mod(self, release, enable=None, unpack=None):
-        file_name = release.file_name
         mod_name = release.info_json.name
+        file_name = release.file_name
+        self.validate_mod_file_name(file_name)
+        file_path = os.path.join(self.config.mods_path, file_name)
 
+        installed_mod = self.get_mod(mod_name)
+        if installed_mod and unpack is None:
+            unpack = not installed_mod.packed
+
+        self.download_mod(release, file_path)
+
+        mod = ZippedMod(self, file_path)
+
+        if installed_mod and (installed_mod.basename != mod.basename or
+                              not installed_mod.packed):
+            installed_mod.remove()
+
+        if enable is not None:
+            mod.enabled = enable
+
+        if unpack:
+            mod.unpack()
+
+    def validate_mod_file_name(self, file_name):
         assert '/' not in file_name
         assert '\\' not in file_name
         assert file_name.endswith('.zip')
 
-        try:
-            installed_mod = next(self.get_mods(mod_name))
-            if unpack is None:
-                unpack = not installed_mod.packed
-        except StopIteration:
-            installed_mod = None
-
+    def download_mod(self, release, file_path):
         player_data = self.require_login()
         url = urljoin(self.api.base_url, release.download_url)
 
@@ -435,22 +456,8 @@ class ModManager:
                 )
             )
 
-        file_path = os.path.join(self.config.mods_path, file_name)
-
         with open(file_path, 'wb') as f:
             f.write(data)
-
-        mod = ZippedMod(self, file_path)
-
-        if installed_mod and (installed_mod.basename != mod.basename or
-                              not installed_mod.packed):
-            installed_mod.remove()
-
-        if enable is not None:
-            mod.enabled = enable
-
-        if unpack:
-            mod.unpack()
 
     def uninstall_mods(self, name, version=None):
         mods_to_remove = self.get_mods(name=name, version=version)

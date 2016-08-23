@@ -1,13 +1,14 @@
 import os.path
 import shutil
 import json
-from pathlib import Path
 
 from glob import glob
 from zipfile import ZipFile
+from pathlib import Path
 from urllib.parse import urljoin
 
 import requests
+from pkg_resources import parse_version
 
 from fac.files import JSONFile
 from fac.utils import JSONDict
@@ -293,17 +294,21 @@ class ModManager:
 
         mod = self.api.get(req.name)
 
-        return [release for release in mod.releases
-                if release.version in spec and
-                release.game_version == game_ver]
+        res = [release for release in mod.releases
+               if release.version in spec and
+               release.game_version == game_ver]
+        res.sort(key=lambda r: parse_version(r.version), reverse=True)
+        return res
 
     def resolve_local_requirement(self, req):
         spec = req.specifier
         game_ver = self.config.game_version_major
 
-        return [info for info in self.get_mods(req.name)
-                if info.version in spec and
-                info.factorio_version == game_ver]
+        res = [mod for mod in self.get_mods(req.name)
+               if mod.version in spec and
+               mod.factorio_version == game_ver]
+        res.sort(key=lambda m: parse_version(m.version), reverse=True)
+        return res
 
     def is_mod_enabled(self, name):
         mod = self.get_mod_json(name)

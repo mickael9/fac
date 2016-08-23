@@ -7,7 +7,7 @@ class ListCommand(Command):
     name = 'list'
 
     def run(self, args):
-        mods = self.manager.get_mods()
+        mods = self.manager.find_mods()
         if not mods:
             print('No installed mods.')
             return

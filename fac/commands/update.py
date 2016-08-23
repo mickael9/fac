@@ -24,7 +24,7 @@ class UpdateCommand(Command):
     ]
 
     def run(self, args):
-        installed = self.manager.get_mods()
+        installed = self.manager.find_mods()
         updates = []
         game_ver = self.config.game_version_major
 

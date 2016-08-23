@@ -23,7 +23,7 @@ class RemoveCommand(Command):
         mods = []
         for mod_pattern in args.mod:
             mod_pattern = self.manager.resolve_mod_name(mod_pattern)
-            matches = list(self.manager.get_mods(mod_pattern,
+            matches = list(self.manager.find_mods(mod_pattern,
                                                  packed=args.packed))
             mods.extend(matches)
             if not matches:

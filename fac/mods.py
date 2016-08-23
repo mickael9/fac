@@ -265,11 +265,11 @@ class ModManager:
                 return mod
 
     def get_mod(self, name, *args, **kwargs):
-        for mod in self.get_mods(name, *args, **kwargs):
+        for mod in self.find_mods(name, *args, **kwargs):
             if mod.name == name:
                 return mod
 
-    def get_mods(self, name=None, version=None, packed=None):
+    def find_mods(self, name=None, version=None, packed=None):
         for mod_type in (ZippedMod, UnpackedMod):
             if packed is not None and mod_type.packed != bool(packed):
                 continue
@@ -281,7 +281,7 @@ class ModManager:
             return name
 
         # Find an exact local match
-        local_mods = list(self.get_mods())
+        local_mods = list(self.find_mods())
 
         for mod in local_mods:
             if mod.name == name:
@@ -330,7 +330,7 @@ class ModManager:
         spec = req.specifier
         game_ver = self.config.game_version_major
 
-        res = [mod for mod in self.get_mods(req.name)
+        res = [mod for mod in self.find_mods(req.name)
                if mod.version in spec and
                mod.factorio_version == game_ver]
         res.sort(key=lambda m: parse_version(m.version), reverse=True)
@@ -460,7 +460,7 @@ class ModManager:
             f.write(data)
 
     def uninstall_mods(self, name, version=None):
-        mods_to_remove = self.get_mods(name=name, version=version)
+        mods_to_remove = self.find_mods(name=name, version=version)
 
         for mod in mods_to_remove:
             mod.remove()

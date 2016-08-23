@@ -11,6 +11,7 @@ class HoldCommand(Command):
 
     def run(self, args):
         for name in args.mod:
+            name = self.manager.resolve_mod_name(name)
             installed = self.manager.get_mod(name)
 
             if not installed:
@@ -43,6 +44,7 @@ class UnholdCommand(Command):
 
     def run(self, args):
         for name in args.mod:
+            name = self.manager.resolve_mod_name(name)
             if name in self.config.hold:
                 hold = self.config.hold
                 hold.remove(name)

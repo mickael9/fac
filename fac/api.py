@@ -26,7 +26,10 @@ class API:
                query, tags=[],
                order=DEFAULT_ORDER,
                page_size=DEFAULT_PAGE_SIZE,
-               page=1):
+               page=1,
+               limit=0):
+
+        count = 0
 
         while True:
             resp = self.session.get(self.url, params=dict(
@@ -40,7 +43,11 @@ class API:
             data = JSONDict(resp.json())
             pages = data.pagination.page_count
 
-            yield from data.results
+            for result in data.results:
+                count += 1
+                yield result
+                if limit and limit == count:
+                    return
 
             page += 1
             if page > pages:

@@ -8,6 +8,7 @@ class EnableDisableCommand(Command):
 
     def run(self, args):
         for mod_name in args.mods:
+            mod_name = self.manager.resolve_mod_name(mod_name)
             mod = self.manager.get_mod(mod_name)
             mod_json = self.manager.get_mod_json(mod_name)
 

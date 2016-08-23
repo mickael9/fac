@@ -2,7 +2,7 @@ from pkg_resources import parse_version
 
 from fac.commands import Command, Arg
 from fac.api import ModNotFoundError
-from fac.utils import parse_requirement
+from fac.utils import parse_requirement, Requirement
 
 
 class InstallCommand(Command):
@@ -50,7 +50,9 @@ class InstallCommand(Command):
         to_install = []
 
         for req in args.requirement:
-            req = parse_requirement(req)
+            name, spec = parse_requirement(req)
+            name = self.manager.resolve_mod_name(name, remote=True)
+            req = Requirement(name, spec)
 
             try:
                 releases = self.manager.resolve_remote_requirement(req)

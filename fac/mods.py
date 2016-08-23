@@ -11,7 +11,7 @@ import requests
 
 from fac.files import JSONFile
 from fac.utils import JSONDict
-from fac.api import AuthError
+from fac.api import AuthError, ModNotFoundError
 
 
 class Mod:
@@ -195,6 +195,45 @@ class ModManager:
     def get_mods(self, name=None, version=None):
         for mod_type in (ZippedMod, UnpackedMod):
             yield from mod_type.find(self, name, version)
+
+    def resolve_mod_name(self, name, remote=False):
+        if '*' in name:
+            # Keep patterns unmodified
+            return name
+
+        # Find an exact local match
+        local_mods = list(self.get_mods())
+
+        for mod in local_mods:
+            if mod.name == name:
+                return name
+
+        if remote:
+            # Find an exact remote match
+            try:
+                mod = self.api.get(name)
+                return mod.name
+            except ModNotFoundError:
+                pass
+
+        # Find a local match (case-insensitive)
+        for mod in local_mods:
+            if mod.name.lower() == name.lower():
+                return mod.name
+
+        if remote:
+            # Find a remote match (case-insensitive)
+            remote_mods = list(self.api.search(name, page_size=5, limit=5))
+            for mod in remote_mods:
+                if mod.name.lower() == name.lower():
+                    return mod.name
+
+            # If there was only one result, we can assume it's the one
+            if len(remote_mods) == 1:
+                return remote_mods[0].name
+
+        # If nothing was found, return original mod name and let things fail
+        return name
 
     def resolve_remote_requirement(self, req):
         spec = req.specifier

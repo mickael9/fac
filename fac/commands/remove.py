@@ -16,7 +16,11 @@ class RemoveCommand(Command):
     def run(self, args):
         mods = []
         for mod_pattern in args.mod:
-            mods.extend(self.manager.get_mods(mod_pattern))
+            mod_pattern = self.manager.resolve_mod_name(mod_pattern)
+            matches = list(self.manager.get_mods(mod_pattern))
+            mods.extend(matches)
+            if not matches:
+                print('No match found for %s.' % mod_pattern)
 
         if mods:
             print('The following mods will be removed:')
@@ -28,5 +32,3 @@ class RemoveCommand(Command):
 
             for mod in mods:
                 mod.remove()
-        else:
-            print('No matching mods.')

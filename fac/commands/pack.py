@@ -3,7 +3,7 @@ from fac.commands import Command, Arg
 
 class PackUnpackCommand(Command):
     arguments = [
-        Arg('mods', nargs='+', help='mods to affect'),
+        Arg('mods', nargs='+', help='mods patterns to affect'),
         Arg('--replace', '-R', action='store_true',
             help='replace existing file/directory when packing/unpacking'),
         Arg('--keep', '-K', action='store_true',
@@ -13,28 +13,31 @@ class PackUnpackCommand(Command):
     def run(self, args):
         pack = self.name == 'pack'
 
-        for mod_name in args.mods:
-            mod_name = self.manager.resolve_mod_name(mod_name)
+        for mod_pattern in args.mods:
+            mod_pattern = self.manager.resolve_mod_name(mod_pattern)
+            mods = list(self.manager.find_mods(mod_pattern, packed=not pack))
 
-            mod = self.manager.get_mod(mod_name, packed=not pack)
-            if not mod:
-                print('Nothing to %s.' % self.name)
+            if not mods:
+                print('No %sable found for %s.' % (self.name,
+                                                   mod_pattern))
                 continue
 
-            dup_mod = self.manager.get_mod(mod_name, mod.version, packed=pack)
+            for mod in mods:
+                dup_mod = self.manager.get_mod(mod.name, mod.version,
+                                               packed=pack)
 
-            if dup_mod and not args.replace:
-                print('%s is already %sed. Use -R to replace it.' % (
-                    mod_name, self.name
-                ))
-                continue
+                if dup_mod and not args.replace:
+                    print('%s is already %sed. Use -R to replace it.' % (
+                        mod.name, self.name
+                    ))
+                    continue
 
-            if pack:
-                mod.pack(replace=args.replace, keep=args.keep)
-            else:
-                mod.unpack(replace=args.replace, keep=args.keep)
+                if pack:
+                    mod.pack(replace=args.replace, keep=args.keep)
+                else:
+                    mod.unpack(replace=args.replace, keep=args.keep)
 
-            print('%s is now %sed' % (mod_name, self.name))
+                print('%s is now %sed' % (mod.name, self.name))
 
 
 class PackCommand(PackUnpackCommand):

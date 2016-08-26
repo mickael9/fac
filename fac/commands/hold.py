@@ -6,25 +6,27 @@ class HoldCommand(Command):
 
     name = 'hold'
     arguments = [
-        Arg('mods', help='mods to hold', nargs='*'),
+        Arg('mods', help='mods patterns to hold', nargs='*'),
     ]
 
     def run(self, args):
-        for name in args.mods:
-            name = self.manager.resolve_mod_name(name)
-            installed = self.manager.get_mod(name)
+        for mod_pattern in args.mods:
+            mod_pattern = self.manager.resolve_mod_name(mod_pattern)
+            mods = self.manager.find_mods(mod_pattern)
 
-            if not installed:
-                print('%s is not installed.' % name)
+            if not mods:
+                print('No match found for %s.' % mod_pattern)
                 continue
 
-            if name not in self.config.hold:
-                self.config.hold += [name]
-                self.config.save()
-                print('%s will not be updated automatically anymore' %
-                      name)
-            else:
-                print('%s is already held' % name)
+            for mod in mods:
+                if mod.name not in self.config.hold:
+                    self.config.hold += [mod.name]
+                    self.config.save()
+                    print('%s will not be updated automatically anymore.' %
+                          mod.name)
+                else:
+                    print('%s is already held' % mod.name)
+
         if not args.mods:
             if self.config.hold:
                 print('Mods currently held:')
@@ -43,14 +45,26 @@ class UnholdCommand(Command):
     ]
 
     def run(self, args):
-        for name in args.mods:
-            name = self.manager.resolve_mod_name(name)
-            if name in self.config.hold:
-                hold = self.config.hold
-                hold.remove(name)
-                self.config.hold = hold
-                self.config.save()
-                print('%s will now be updated automatically.' %
-                      name)
-            else:
-                print('%s is not held.' % name)
+        for mod_pattern in args.mods:
+            mod_pattern = self.manager.resolve_mod_name(mod_pattern)
+            mods = [mod.name for mod in self.manager.find_mods(mod_pattern)]
+
+            if not mods:
+                # Special case for mods that have been removed
+                # but are still in the hold list
+                if mod_pattern in self.config.hold:
+                    mods = [mod_pattern]
+                else:
+                    print('No match found for %s.' % mod_pattern)
+                    continue
+
+            for mod_name in mods:
+                if mod_name in self.config.hold:
+                    hold = self.config.hold
+                    hold.remove(mod_name)
+                    self.config.hold = hold
+                    self.config.save()
+                    print('%s will now be updated automatically.' %
+                          mod_name)
+                else:
+                    print('%s is not held.' % mod_name)

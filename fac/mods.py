@@ -57,8 +57,8 @@ class Mod:
 
     @classmethod
     def _find(cls, pattern, manager, name, version):
-        name = name or '*'
-        version = version or '*'
+        name = '*' if name is None else name
+        version = '*' if version is None else version
 
         files = glob(
             os.path.join(

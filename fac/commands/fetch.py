@@ -26,16 +26,16 @@ class FetchCommand(Command):
             help='requirement to fetch '
                  '("name", "name>=1.0", "name==1.2", ...)'),
 
-        Arg('--unpack', '-U', action='store_true', default=None,
+        Arg('-U', '--unpack', action='store_true', default=None,
             help='unpack mods zip files after downloading'),
 
-        Arg('--keep', '-K', action='store_true',
+        Arg('-K', '--keep', action='store_true',
             help='keep mod zip file after unpacking'),
 
         Arg('--dest', '-d', default='.',
             help='destination directory (default: current directory)'),
 
-        Arg('--replace', '-R', action='store_true',
+        Arg('-R', '--replace', action='store_true',
             help='replace existing file/directory'),
     ]
 

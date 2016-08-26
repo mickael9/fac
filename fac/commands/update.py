@@ -16,10 +16,10 @@ class UpdateCommand(Command):
         Arg('-y', '--yes', action='store_true',
             help='automatic yes to confirmation prompt'),
 
-        Arg('--unpacked', '-U', action='store_true',
+        Arg('-U', '--unpacked', action='store_true',
             help='allow updating unpacked mods'),
 
-        Arg('--held', '-H', action='store_true',
+        Arg('-H', '--held', action='store_true',
             help='allow updating held mods'),
     ]
 

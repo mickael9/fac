@@ -4,9 +4,9 @@ from fac.commands import Command, Arg
 class PackUnpackCommand(Command):
     arguments = [
         Arg('mods', nargs='+', help='mods patterns to affect'),
-        Arg('--replace', '-R', action='store_true',
+        Arg('-R', '--replace', action='store_true',
             help='replace existing file/directory when packing/unpacking'),
-        Arg('--keep', '-K', action='store_true',
+        Arg('-K', '--keep', action='store_true',
             help='keep existing directory/file after packing/unpacking'),
     ]
 

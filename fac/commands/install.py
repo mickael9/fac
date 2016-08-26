@@ -27,16 +27,16 @@ class InstallCommand(Command):
             help='requirements to install '
                  '("name", "name>=1.0", "name==1.2", ...)'),
 
-        Arg('--held', '-H', action='store_true',
+        Arg('-H', '--held', action='store_true',
             help='allow updating held mods'),
 
-        Arg('--reinstall', '-R', action='store_true',
+        Arg('-R', '--reinstall', action='store_true',
             help='allow reinstalling mods'),
 
-        Arg('--downgrade', '-D', action='store_true',
+        Arg('-D', '--downgrade', action='store_true',
             help='allow downgrading mods'),
 
-        Arg('--unpack', '-U', action='store_true', default=None,
+        Arg('-U', '--unpack', action='store_true', default=None,
             help='unpack mods zip files'),
 
         # Arg('-o', '--install-optdeps', action='store_true',

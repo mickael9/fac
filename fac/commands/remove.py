@@ -12,10 +12,10 @@ class RemoveCommand(Command):
         Arg('-y', '--yes', action='store_true',
             help='automatic yes to confirmation prompt'),
 
-        Arg('--unpacked', '-U', action='store_false', dest='packed',
+        Arg('-U', '--unpacked', action='store_false', dest='packed',
             default=None, help='only remove unpacked mods'),
 
-        Arg('--packed', '-P', action='store_true', dest='packed',
+        Arg('-P', '--packed', action='store_true', dest='packed',
             default=None, help='only remove packed mods',),
     ]
 

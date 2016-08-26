@@ -30,6 +30,14 @@ class Mod:
 
     enabled = property(get_enabled, set_enabled)
 
+    def get_held(self):
+        return self.manager.is_mod_held(self.name)
+
+    def set_held(self, held):
+        self.manager.set_mod_held(self.name, held)
+
+    held = property(get_held, set_held)
+
     @property
     def name(self):
         return self.info.name
@@ -363,6 +371,21 @@ class ModManager:
             return True
         else:
             return False
+
+    def is_mod_held(self, name):
+        return name in self.config.hold
+
+    def set_mod_held(self, name, held=True):
+        if self.is_mod_held(name) == held:
+            return False
+
+        if held:
+            self.config.hold.append(name)
+        else:
+            self.config.hold.remove(name)
+
+        self.config.save()
+        return True
 
     def require_login(self):
         import getpass

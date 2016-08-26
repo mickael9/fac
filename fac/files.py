@@ -54,6 +54,7 @@ class Config(ConfigParser):
         super().__init__(allow_no_value=True)
 
         self.read_string(self.default_config)
+        self.hold = []
 
         if config_file:
             self.config_file = config_file
@@ -63,13 +64,18 @@ class Config(ConfigParser):
                 'config.ini'
             )
 
-        try:
-            self.read(self.config_file)
-        except IOError:
-            pass
+        if os.path.isfile(self.config_file):
+            self.load()
+
+    def load(self):
+        self.read(self.config_file)
+        self.hold = self.get('mods', 'hold').split()
 
     def save(self):
         dirname = os.path.dirname(self.config_file)
+
+        hold = '\n'.join(self.hold)
+        self.set('mods', 'hold', hold)
 
         if not os.path.isdir(dirname):
             os.makedirs(dirname)
@@ -162,14 +168,6 @@ class Config(ConfigParser):
     @property
     def mods_path(self):
         return os.path.join(self.factorio_write_path, 'mods')
-
-    def get_hold(self):
-        return self.get('mods', 'hold').split()
-
-    def set_hold(self, value):
-        self.set('mods', 'hold', '\n'.join(value))
-
-    hold = property(get_hold, set_hold)
 
 
 class JSONFile(JSONDict):

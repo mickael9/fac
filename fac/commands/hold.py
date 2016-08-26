@@ -19,9 +19,8 @@ class HoldCommand(Command):
                 continue
 
             for mod in mods:
-                if mod.name not in self.config.hold:
-                    self.config.hold += [mod.name]
-                    self.config.save()
+                if not mod.held:
+                    mod.held = True
                     print('%s will not be updated automatically anymore.' %
                           mod.name)
                 else:
@@ -59,11 +58,7 @@ class UnholdCommand(Command):
                     continue
 
             for mod_name in mods:
-                if mod_name in self.config.hold:
-                    hold = self.config.hold
-                    hold.remove(mod_name)
-                    self.config.hold = hold
-                    self.config.save()
+                if self.manager.set_mod_held(mod_name, False):
                     print('%s will now be updated automatically.' %
                           mod_name)
                 else:

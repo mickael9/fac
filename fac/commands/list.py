@@ -20,6 +20,8 @@ class ListCommand(Command):
                 tags.append('disabled')
             if not mod.packed:
                 tags.append('unpacked')
+            if mod.held:
+                tags.append('held')
             if tags:
                 tags = ' (%s)' % (', '.join(tags))
             else:

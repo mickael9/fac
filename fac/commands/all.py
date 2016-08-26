@@ -10,3 +10,4 @@ import fac.commands.remove
 import fac.commands.hold
 import fac.commands.pack
 import fac.commands.fetch
+import fac.commands.make_compatible

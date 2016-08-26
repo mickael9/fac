@@ -16,6 +16,11 @@ def main():
     common_group = common_parser.add_argument_group('general options')
 
     common_group.add_argument(
+        '-G', '--game-version',
+        help='force a specific game version'
+    )
+
+    common_group.add_argument(
         '-v', '--verbose', action='store_true',
         help='show more detailled output'
     )
@@ -48,6 +53,9 @@ def main():
 
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
+
+    if args.game_version:
+        config.game_version = args.game_version
 
     log.debug('Factorio write path: %s', config.factorio_write_path)
     log.debug('Factorio game path: %s', config.factorio_data_path)

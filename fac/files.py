@@ -55,6 +55,7 @@ class Config(ConfigParser):
 
         self.read_string(self.default_config)
         self.hold = []
+        self.forced_game_version = None
 
         if config_file:
             self.config_file = config_file
@@ -152,14 +153,21 @@ class Config(ConfigParser):
             )
         )
 
-    @property
-    def game_version(self):
+    def get_game_version(self):
+        if self.forced_game_version:
+            return self.forced_game_version
+
         json_file = os.path.join(
             self.factorio_data_path,
             'base', 'info.json'
         )
         json = JSONFile(json_file)
         return json.version
+
+    def set_game_version(self, version):
+        self.forced_game_version = version
+
+    game_version = property(get_game_version, set_game_version)
 
     @property
     def game_version_major(self):

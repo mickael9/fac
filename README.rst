@@ -2,7 +2,7 @@ fac
 ===
 
 
-`Fac` is a command-line mod manager for Factorio 0.13 written in Python 3.
+`Fac` is a command-line mod manager for Factorio >=0.13 written in Python 3.
 
 .. contents::
    :depth: 1

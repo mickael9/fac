@@ -332,7 +332,7 @@ class ModManager:
         # If nothing was found, return original mod name and let things fail
         return name
 
-    def resolve_remote_requirement(self, req):
+    def resolve_remote_requirement(self, req, ignore_game_ver=False):
         spec = req.specifier
         game_ver = self.config.game_version_major
 
@@ -340,17 +340,17 @@ class ModManager:
 
         res = [release for release in mod.releases
                if release.version in spec and
-               release.game_version == game_ver]
+               ignore_game_ver or release.game_version == game_ver]
         res.sort(key=lambda r: parse_version(r.version), reverse=True)
         return res
 
-    def resolve_local_requirement(self, req):
+    def resolve_local_requirement(self, req, ignore_game_ver=False):
         spec = req.specifier
         game_ver = self.config.game_version_major
 
         res = [mod for mod in self.find_mods(req.name)
                if mod.version in spec and
-               mod.factorio_version == game_ver]
+               ignore_game_ver or mod.factorio_version == game_ver]
         res.sort(key=lambda m: parse_version(m.version), reverse=True)
         return res
 

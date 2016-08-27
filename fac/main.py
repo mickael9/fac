@@ -16,8 +16,13 @@ def main():
     common_group = common_parser.add_argument_group('general options')
 
     common_group.add_argument(
-        '-G', '--game-version',
+        '-g', '--game-version',
         help='force a specific game version'
+    )
+
+    common_group.add_argument(
+        '-i', '--ignore-game-ver', action='store_true',
+        help='ignore game version when selecting packages'
     )
 
     common_group.add_argument(

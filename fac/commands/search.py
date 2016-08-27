@@ -29,9 +29,6 @@ class SearchCommand(Command):
 
         Arg('-l', '--limit', type=int,
             help='only show that many results'),
-
-        Arg('-i', '--incompatible', action='store_true',
-            help='include mods with incompatible game versions'),
     ]
 
     def run(self, args):
@@ -45,7 +42,7 @@ class SearchCommand(Command):
 
             tags = [tag.name for tag in result.tags]
             if self.config.game_version_major not in result.game_versions:
-                if args.incompatible:
+                if args.ignore_game_ver:
                     tags.insert(0, 'incompatible')
                 else:
                     hidden += 1

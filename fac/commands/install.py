@@ -56,7 +56,9 @@ class InstallCommand(Command):
             req = Requirement(name, spec)
 
             try:
-                releases = self.manager.resolve_remote_requirement(req)
+                releases = self.manager.resolve_remote_requirement(
+                    req, ignore_game_ver=args.ignore_game_ver
+                )
             except ModNotFoundError as ex:
                 print("Error: %s" % ex)
                 continue
@@ -115,10 +117,15 @@ class InstallCommand(Command):
                             deps_ok = False
                             break
 
-                    if self.manager.resolve_local_requirement(depreq):
+                    if self.manager.resolve_local_requirement(
+                            depreq,
+                            ignore_game_ver=args.ignore_game_ver):
                         continue
                     try:
-                        rels = self.manager.resolve_remote_requirement(depreq)
+                        rels = self.manager.resolve_remote_requirement(
+                            depreq,
+                            ignore_game_ver=args.ignore_game_ver
+                        )
                     except ModNotFoundError:
                         print('Dependency not found: %s' % depreq.name)
                         deps_ok = False

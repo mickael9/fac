@@ -46,7 +46,9 @@ class FetchCommand(Command):
             req = Requirement(name, spec)
 
             try:
-                releases = self.manager.resolve_remote_requirement(req)
+                releases = self.manager.resolve_remote_requirement(
+                    req, ignore_game_ver=True
+                )
             except ModNotFoundError as ex:
                 print("Error: %s" % ex)
                 continue

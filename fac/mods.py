@@ -529,9 +529,3 @@ class ModManager:
             f.write(data)
 
         return ZippedMod(self, file_path)
-
-    def uninstall_mods(self, name, version=None):
-        mods_to_remove = self.find_mods(name=name, version=version)
-
-        for mod in mods_to_remove:
-            mod.remove()

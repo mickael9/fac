@@ -32,9 +32,11 @@ Or from an existing clone:
     $ pip3 install -e .
 
 
-*NOTE (linux users)*: By default, these commands will require you to be root unless you run `pip` from a virtualenv or you use the ``--user`` flag.
+*NOTE (linux users)*: By default, these commands will require you to be root unless you
+run `pip` from a virtualenv or you use the ``--user`` flag.
 
-If you run `pip` with the ``--user`` flag, make sure ``~/.local/bin`` is in your `PATH` or the `fac` command will not work.
+If you run `pip` with the ``--user`` flag, make sure ``~/.local/bin`` is in your `PATH`
+or the `fac` command will not work.
 
 
 Configuration
@@ -42,17 +44,19 @@ Configuration
 
 fac needs to be able to know the location of:
 
- * The Factorio data directory, eg ``/usr/share/factorio/``
- * The Factorio configuration directory, eg ``~/.factorio``
+- The Factorio data directory, eg ``/usr/share/factorio/``
+- The Factorio configuration directory, eg ``~/.factorio``
 
-Normally, it should be able to detect these automatically assuming you have a standard setup (eg. Steam).
+Normally, it should be able to detect these automatically assuming you have a standard
+setup (eg. Steam).
 It will also look in the current working directory and its parent.
 
-If for some reason these paths can't be found automatically, you'll have to specify them in fac's config file, which is located at:
+If for some reason these paths can't be found automatically, you'll have to specify
+them in fac's config file, which is located at:
 
- * ``~/.config/fac/config.ini`` on Linux
- * ``C:\Users\<username>\AppData\Local\fac\config.ini`` on Windows
- * ``~/Library/Application Support/fac/config.ini`` on Mac OS X
+- ``~/.config/fac/config.ini`` on Linux
+- ``C:\Users\<username>\AppData\Local\fac\config.ini`` on Windows
+- ``~/Library/Application Support/fac/config.ini`` on Mac OS X
 
 .. code:: ini
 
@@ -319,17 +323,19 @@ Most commands will try to guess the correct name when given inexact mod names.
 If the name is a filter (eg `5dim_*`), no attempt to autocorrect will be made.
 
 The following attempts are made to find a match for a given mod name:
- * Exact match
- * Case-insensitive match
- * Partial case-insensitive match if there is no ambiguity.
- * For remote commands (install, update...), the search result if there is only one.
+
+- Exact match
+- Case-insensitive match
+- Partial case-insensitive match if there is no ambiguity.
+- For remote commands (install, update...), the search result if there is only one.
 
 For remote commands, a local match will first be attempted at each step.
 
 For instance:
- *  `yarm` will be converted to `YARM` via the *Case-insensitive match* strategy
- * `ya` will either be converted to `YARM` if you have YARM installed or fail because
-   there is more than one result to the `fac search ya` command.
+
+- `yarm` will be converted to `YARM` via the *Case-insensitive match* strategy
+- `ya` will either be converted to `YARM` if you have YARM installed
+  or fail because there is more than one result to the `fac search ya` command.
 
 Game version incompatibilities
 ------------------------------

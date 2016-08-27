@@ -49,7 +49,10 @@ class Mod:
 
     @property
     def game_version(self):
-        return self.info.factorio_version
+        try:
+            return self.info.factorio_version
+        except AttributeError:
+            return '0.12'
 
     def _check_valid(self):
         expected_basename = "%s_%s" % (self.name, self.version)

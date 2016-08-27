@@ -74,8 +74,7 @@ class FetchCommand(Command):
                 os.makedirs(args.dest)
 
             print('Saving to: %s' % file_path)
-            self.manager.download_mod(release, file_path)
+            mod = self.manager.download_mod(release, file_path)
 
             if args.unpack:
-                m = ZippedMod(self.manager, file_path)
-                m.unpack(replace=args.replace, keep=args.keep)
+                mod.unpack(replace=args.replace, keep=args.keep)

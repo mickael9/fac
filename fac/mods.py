@@ -155,13 +155,15 @@ class ZippedMod(Mod):
                     dest = self._sanitize_arcname(dest)
                     dest = os.path.join(unpacked_location, dest)
                     self._extract_member(f, arcname, dest)
+                unpacked_mod = UnpackedMod(self.manager, unpacked_location)
             except:
                 shutil.rmtree(unpacked_location)
                 raise
 
         if not keep:
             self.remove()
-        return UnpackedMod(self.manager, unpacked_location)
+
+        return unpacked_mod
 
     def _sanitize_arcname(self, arcname):
         arcname = arcname.replace('/', os.path.sep)
@@ -250,6 +252,8 @@ class UnpackedMod(Mod):
                             '%s/%s' % (root, file_name),
                             '%s/%s' % (zip_root, file_name),
                         )
+                f.close()
+                packed_mod = ZippedMod(self.manager, packed_location)
             except:
                 f.close()
                 os.remove(packed_location)
@@ -258,7 +262,7 @@ class UnpackedMod(Mod):
         if not keep:
             self.remove()
 
-        return ZippedMod(self.manager, packed_location)
+        return packed_mod
 
     @classmethod
     def find(cls, *args, **kwargs):
@@ -459,7 +463,15 @@ class ModManager:
         if installed_mod and unpack is None:
             unpack = not installed_mod.packed
 
-        self.download_mod(release, file_path)
+        tmp_file = os.path.join(
+            self.config.factorio_write_path,
+            'tmp',
+            file_name
+        )
+
+        os.makedirs(os.path.dirname(tmp_file), exist_ok=True)
+        self.download_mod(release, tmp_file)
+        os.rename(tmp_file, file_path)
 
         mod = ZippedMod(self, file_path)
 
@@ -502,6 +514,8 @@ class ModManager:
 
         with open(file_path, 'wb') as f:
             f.write(data)
+
+        return ZippedMod(self, file_path)
 
     def uninstall_mods(self, name, version=None):
         mods_to_remove = self.find_mods(name=name, version=version)

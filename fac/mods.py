@@ -2,10 +2,11 @@ import os.path
 import shutil
 import json
 
-from glob import glob
+from urllib.parse import urljoin
+from fnmatch import fnmatchcase
 from zipfile import ZipFile
 from pathlib import Path
-from urllib.parse import urljoin
+from glob import glob
 
 import requests
 from pkg_resources import parse_version
@@ -62,20 +63,28 @@ class Mod:
     @classmethod
     def _find(cls, pattern, manager, name, version):
         name = '*' if name is None else name
-        version = '*' if version is None else version
 
-        files = glob(
+        installed = glob(
             os.path.join(
                 manager.config.mods_path,
-                pattern % (name, version)
+                pattern
             )
         )
-        for file in files:
+        for path in installed:
             try:
-                mod = cls(manager, file)
-                yield mod
+                mod = cls(manager, path)
+
             except Exception as ex:
-                print('Warning: invalid mod %s: %s' % (file, ex))
+                print('Warning: invalid mod %s: %s' % (path, ex))
+                continue
+
+            if not fnmatchcase(mod.name, name):
+                continue
+
+            if version is not None and version != mod.version:
+                continue
+
+            yield mod
 
 
 class ZippedMod(Mod):
@@ -199,7 +208,7 @@ class ZippedMod(Mod):
 
     @classmethod
     def find(cls, *args, **kwargs):
-        return cls._find("%s_%s.zip", *args, **kwargs)
+        return cls._find("*.zip", *args, **kwargs)
 
 
 class UnpackedMod(Mod):
@@ -207,6 +216,10 @@ class UnpackedMod(Mod):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if os.path.isfile(self.location):
+            self.location = os.path.dirname(self.location)
+
         self.basename = os.path.basename(
             os.path.realpath(
                 self.location
@@ -266,7 +279,7 @@ class UnpackedMod(Mod):
 
     @classmethod
     def find(cls, *args, **kwargs):
-        return cls._find("%s_%s/", *args, **kwargs)
+        return cls._find("*/info.json", *args, **kwargs)
 
 
 class ModManager:
@@ -308,7 +321,7 @@ class ModManager:
             return name
 
         # Find an exact local match
-        local_mods = list(self.find_mods())
+        local_mods = self.find_mods()
 
         for mod in local_mods:
             if mod.name == name:

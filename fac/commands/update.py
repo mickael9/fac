@@ -37,7 +37,8 @@ class UpdateCommand(Command):
                 continue
 
             for release in remote_mod.releases:
-                if release.game_version != game_ver:
+                if not args.ignore_game_ver and \
+                        release.game_version != game_ver:
                     continue
 
                 release_ver = parse_version(release.version)

@@ -15,7 +15,7 @@ class PackUnpackCommand(Command):
 
         for mod_pattern in args.mods:
             mod_pattern = self.manager.resolve_mod_name(mod_pattern)
-            mods = list(self.manager.find_mods(mod_pattern, packed=not pack))
+            mods = self.manager.find_mods(mod_pattern, packed=not pack)
 
             if not mods:
                 print('No %sable found for %s.' % (self.name,

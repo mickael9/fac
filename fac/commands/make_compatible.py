@@ -21,19 +21,9 @@ class MakeCompatibleCommand(Command):
         game_ver = self.config.game_version_major
         for mod_pattern in args.mods:
             mod_pattern = self.manager.resolve_mod_name(mod_pattern)
-            packed_mods = list(self.manager.find_mods(mod_pattern,
-                                                      packed=True))
-
-            for mod in packed_mods:
-                if mod.game_version == game_ver:
-                    continue
-                mod.unpack(replace=False)
-
             mods = [
-                mod for mod in
-                self.manager.find_mods(
-                    mod_pattern, packed=False
-                )
+                mod.unpack(replace=False)
+                for mod in self.manager.find_mods(mod_pattern)
                 if mod.game_version != game_ver
             ]
 

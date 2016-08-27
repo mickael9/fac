@@ -67,7 +67,10 @@ def main():
     log.debug('Factorio version: %s', config.game_version)
 
     if args.command:
-        args.run(args)
+        try:
+            args.run(args)
+        except KeyboardInterrupt:
+            pass
     else:
         root_parser.print_help()
 

@@ -94,10 +94,14 @@ class InstallCommand(Command):
                         )
                         break
 
-                if args.no_deps:
-                    deps = []
-                else:
-                    deps = release.info_json.dependencies
+                deps = []
+
+                if not args.no_deps:
+                    try:
+                        deps = release.info_json.dependencies
+                    except AttributeError:
+                        pass
+
                 deps_to_install = []
                 deps_ok = True
 

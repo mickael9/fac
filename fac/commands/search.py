@@ -33,13 +33,13 @@ class SearchCommand(Command):
 
     def run(self, args):
         hidden = 0
+        count = 0
         game_ver = self.config.game_version_major
 
         for result in self.api.search(
                 query=args.query or '',
                 tags=tuple(args.tag),
-                order=args.sort,
-                limit=args.limit):
+                order=args.sort):
 
             tags = [tag.name for tag in result.tags]
 
@@ -61,6 +61,10 @@ class SearchCommand(Command):
                 result.title, result.name,
                 tags,
                 result.summary.replace('\n', '')))
+
+            count += 1
+            if args.limit and count >= args.limit:
+                break
 
         if hidden:
             print('Note: %d mods were hidden because they have no '

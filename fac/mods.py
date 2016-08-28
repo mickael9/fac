@@ -371,7 +371,8 @@ class ModManager:
 
         res = [release for release in mod.releases
                if release.version in spec and
-               (ignore_game_ver or release.game_version == game_ver)]
+               (ignore_game_ver or
+                release.factorio_version == game_ver)]
         res.sort(key=lambda r: parse_version(r.version), reverse=True)
         return res
 

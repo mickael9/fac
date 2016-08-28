@@ -52,4 +52,4 @@ class ShowCommand(Command):
             else:
                 for release in m.releases:
                     print('    Version: %-9s Game version: %-9s' % (
-                        release.version, release.game_version))
+                        release.version, release.factorio_version))

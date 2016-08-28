@@ -33,6 +33,7 @@ class SearchCommand(Command):
 
     def run(self, args):
         hidden = 0
+        game_ver = self.config.game_version_major
 
         for result in self.api.search(
                 query=args.query or '',
@@ -41,7 +42,10 @@ class SearchCommand(Command):
                 limit=args.limit):
 
             tags = [tag.name for tag in result.tags]
-            if self.config.game_version_major not in result.game_versions:
+
+            # apparently game_versions can't be trusted so cheat a bit here
+            if game_ver not in result.game_versions and (
+                    game_ver != result.latest_release.factorio_version):
                 if args.ignore_game_ver:
                     tags.insert(0, 'incompatible')
                 else:

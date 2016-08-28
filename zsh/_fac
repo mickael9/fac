@@ -1,0 +1,139 @@
+#compdef fac
+
+__fac_mods () {
+  declare -a mods
+  if [[ $1 == ENABLED ]]; then
+    mods=(${(f)"$(_call_program fac fac list | tail -n+2  | grep -vF '(disabled' | awk '{print $1}')"})
+  elif [[ $1 == DISABLED ]]; then
+    mods=(${(f)"$(_call_program fac fac list | tail -n+2 | grep  -F '(disabled' | awk '{print $1}')"})
+  else
+    mods=(${(f)"$(_call_program fac fac list | tail -n+2 | awk '{print $1}')"})
+  fi
+  _describe -t mods 'mods' mods
+}
+
+__fac_search () {
+  # TODO: version operators? dual column (human name : code name)?
+  declare -a mods
+  local word=$words[$CURRENT]
+  mods=(${(f)"$(_call_program fac fac search ${word} -a -l10 | egrep -v '^\s{4}' | awk 'NF > 0' | cut -d'(' -f2 | cut -d')' -f1)"})
+  _describe -t mods 'mods' mods
+}
+
+_fac () {
+  local curcontext=$curcontext state ret=1
+  declare -a global_args
+
+  global_args=(
+    '(help)'{-h,--help}'[display help]' \
+    '(verbose)'{-v,--verbose}'[show more detailled output]' \
+    '(ignore-game-ver)'{-i,--ignore-game-ver}'[ignore game version when selecting packages]' \
+    '(game-version)'{-g,--game-version=}'[force a specific game version]:version')
+
+  _arguments -C \
+    ': :->command' \
+    '*:: :->opt-or-arg' && ret=0
+
+  case $state in
+    (command)
+      local -a commands
+      commands=(
+        'list:list installed mods and their status' \
+        'enable:enable mods' \
+        'disable:disable mods' \
+        'search:search the mods database' \
+        'show:show details about mods' \
+        'install:install (or update) mods' \
+        'update:update installed mods' \
+        'remove:remove mods' \
+        'hold:hold mods or show held mods with no argument' \
+        'unhold:unhold mods' \
+        'pack:pack mods' \
+        'unpack:unpack mods' \
+        'fetch:fetch a mod from the mod portal' \
+        'make-compatible:change the supported factorio version of mods')
+      _arguments -S $global_args
+      _describe -t commands command commands
+    ;;
+    (opt-or-arg)
+      curcontext=${curcontext%:*}-$line[1]:
+      case $line[1] in
+        (list)
+          _arguments -S $global_args
+        ;;
+        (enable)
+          _arguments -S $global_args
+          __fac_mods DISABLED
+        ;;
+        (disable)
+          _arguments -S $global_args
+          __fac_mods ENABLED
+        ;;
+        (search)
+          _arguments -S $global_args \
+            '*-t[filter by tag]:string' \
+            '-d[sort results by most downloaded]' \
+            '-a[sort results alphabetically]' \
+            '-u[sort results by most recently updated]' \
+            '(limit)'{-l,--limit=}'[only show that many results]:number'
+        ;;
+        (show)
+          _arguments -S $global_args
+          __fac_mods
+        ;;
+        (install)
+          _arguments -S $global_args \
+            {-H,--held}'[allow updating held mods]' \
+            {-R,--reinstall}'[allow reinstalling mods]' \
+            {-D,--downgrade}'[allow downgrading mods]' \
+            {-U,--unpack}'[unpack mods zip files]' \
+            {-d,--no-deps}'[do not install any dependencies]' \
+            '*:: :__fac_search'
+        ;;
+        (update)
+          _arguments -S $global_args \
+            {-s,--show}'[only show what would be updated]' \
+            {-y,--yes}'[automatic yes to confirmation prompt]' \
+            {-U,--unpacked}'[allow updating unpacked mods]' \
+            {-H,--held}'[allow updating held mods]'
+          __fac_mods
+        ;;
+        (remove)
+          _arguments -S $global_args \
+            {-y,--yes}'[automatic yes to confirmation prompt]' \
+            {-U,--unpacked}'[only remove unpacked mods]' \
+            {-P,--packed}'[only remove packed mods]'
+          __fac_mods
+        ;;
+        (hold)
+          _arguments -S $global_args
+          __fac_mods
+        ;;
+        (unhold)
+          _arguments -S $global_args
+          __fac_mods
+        ;;
+        (unpack)
+          _arguments -S $global_args \
+            {-R,--replace}'[replace existing file/directory when packing/unpacking]' \
+            {-K,--keep}'[keep existing directory/file after packing/unpacking]'
+          __fac_mods
+        ;;
+        (fetch)
+          _arguments -S $global_args \
+            {-U,--unpack}'[unpack mods zip files after downloading]' \
+            {-K,--keep}'[keep mod zip file after unpacking]' \
+            {-d,--dest}'[destination directory (default: current directory)]:destination' \
+            {-R,--replace}'[replace existing file/directory]' \
+            '*:: :__fac_search'
+        ;;
+        (make-compatible)
+          _arguments -S $global_args
+          __fac_mods
+        ;;
+      esac
+    ;;
+  esac
+}
+
+_fac "$@"

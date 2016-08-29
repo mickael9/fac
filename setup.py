@@ -6,7 +6,7 @@ with open('README.rst', 'r', encoding='utf-8') as f:
 setup(
     name='fac-cli',
 
-    version='0.4',
+    version='0.5',
 
     description='Command-line mod manager for Factorio (install, update...).',
     long_description=long_description,

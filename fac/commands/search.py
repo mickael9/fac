@@ -1,4 +1,8 @@
+import sys
+
 from fac.commands import Command, Arg
+from textwrap import fill
+from shutil import get_terminal_size
 
 
 class SearchCommand(Command):
@@ -29,7 +33,29 @@ class SearchCommand(Command):
 
         Arg('-l', '--limit', type=int,
             help='only show that many results'),
+
+        Arg('-F', '--format',
+            help='show results using the specified format string.'),
     ]
+
+    epilog = """
+    An optional format string can be specified with the -F flag.
+    You can use this if you want to customize the default output format.
+
+    The syntax of format strings is decribed here:
+    https://docs.python.org/2/library/string.html#format-string-syntax
+
+    There is only one argument passed to the format string which is the
+    result object returned by the API.
+
+    Using the default string ('s') specifier on a list or object will
+    output valid JSON.
+
+    Some examples:
+        {0.name}                     Name of the mod
+        {0}                          JSON-repesentation of the result object
+        {0.latest_release.version}   Latest release version
+    """
 
     def run(self, args):
         hidden = 0
@@ -52,15 +78,27 @@ class SearchCommand(Command):
                     hidden += 1
                     continue
 
-            if tags:
-                tags = ' [%s]' % (', '.join(tags))
+            if args.format:
+                print(args.format.format(result))
             else:
-                tags = ''
+                print(result.title)
+                print('    Name: %s' % result.name)
 
-            print('%s (%s)%s\n    %s\n' % (
-                result.title, result.name,
-                tags,
-                result.summary.replace('\n', '')))
+                if tags:
+                    print('    Tags: %s' % (', '.join(tags)))
+
+                print()
+                print('\n'.join(
+                    fill(
+                        line,
+                        width=get_terminal_size()[0] - 4,
+                        tabsize=4,
+                        subsequent_indent='    ',
+                        initial_indent='    ',
+                    )
+                    for line in result.summary.splitlines()
+                ))
+                print()
 
             count += 1
             if args.limit and count >= args.limit:
@@ -68,4 +106,5 @@ class SearchCommand(Command):
 
         if hidden:
             print('Note: %d mods were hidden because they have no '
-                  'compatible game versions. Use -i to show them.' % hidden)
+                  'compatible game versions. Use -i to show them.' % hidden,
+                  file=sys.stderr)

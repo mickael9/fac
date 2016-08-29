@@ -14,6 +14,7 @@ class CommandRegistry(type):
 class Command(metaclass=CommandRegistry):
     arguments = []
     help = ''
+    epilog = ''
 
     def __init__(self, api, config, manager):
         self.api = api
@@ -23,12 +24,14 @@ class Command(metaclass=CommandRegistry):
     def create_parser(self, subparser, parents):
         doc = self.__doc__ or ''
         description = textwrap.dedent(doc.strip('\n') or self.help)
+        epilog = textwrap.dedent(self.epilog.strip('\n'))
         help = self.help or (description and description.splitlines()[0])
 
         parser = subparser.add_parser(
             self.name,
             help=help,
             description=description,
+            epilog=epilog,
             parents=parents,
             add_help=False,
             formatter_class=argparse.RawDescriptionHelpFormatter,

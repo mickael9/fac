@@ -33,6 +33,8 @@ setup(
 
     packages=['fac', 'fac.commands'],
 
+    data_files=[('share/zsh/site-functions', ['zsh/_fac'])],
+
     install_requires=['requests', 'appdirs', 'packaging'],
 
     entry_points={

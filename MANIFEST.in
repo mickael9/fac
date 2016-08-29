@@ -1,3 +1,4 @@
 include LICENSE
 include *.rst
+include zsh/_fac
 global-exclude __pycache__

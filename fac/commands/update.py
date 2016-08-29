@@ -38,7 +38,7 @@ class UpdateCommand(Command):
 
             for release in remote_mod.releases:
                 if not args.ignore_game_ver and \
-                        release.game_version != game_ver:
+                        release.factorio_version != game_ver:
                     continue
 
                 release_ver = parse_version(release.version)

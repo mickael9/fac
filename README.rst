@@ -149,20 +149,24 @@ Searching for mods
 .. code::
 
     $ fac search 5dim
-    5dim's Mod - Core (5dim_core) [big-mods]
+
+    5dim's Mod - Core
+        Name: 5dim_core
+        Tags: big-mods
+
         Core of all 5dim's mod
 
-    5dim's Mod - Automatization (5dim_automatization) [big-mods]
+    5dim's Mod - Automatization
+        Name: 5dim_automatization
+        Tags: big-mods
+
         Automatization for 5dim's mod
 
-    5dim's Mod - Energy (5dim_energy) [big-mods]
+    5dim's Mod - Energy
+        Name: 5dim_energy
+        Tags: big-mods
+
         Energy for 5dim's mod
-
-    5dim's Mod - Transport (5dim_transport) [big-mods]
-        Transport for 5dim's mod
-
-    5dim's Mod - Logistic (5dim_logistic) [big-mods]
-        logistic of all 5dim's mod
 
     [...]
 
@@ -364,8 +368,11 @@ You're currently running Factorio 0.14 and want to install your favorite mod, `Y
     Note: 1 mods were hidden because they have no compatible game versions. Use -i to show them.
 
     $ fac search YARM -i
-    Yet Another Resource Monitor Fork (YARM) [incompatible, info]
-        This mod helps you to keep track of your mining sites.
+    Yet Another Resource Monitor Fork
+        Name: YARM
+        Tags: incompatible, info
+
+    This mod helps you to keep track of your mining sites.
 
 Feeling courageous, you want to try it anyway:
 
@@ -380,3 +387,58 @@ Feeling courageous, you want to try it anyway:
     Game version changed to 0.14 for YARM 0.7.105.
 
 You can now use the mod as if it was made for Factorio 0.14.
+
+
+ZSH completion script
+---------------------
+
+If you're using ZSH (and you should be!) you can install the provided completion script
+for a better experience.
+
+You'll need to add the `zsh` directory to your `fpath` using something like this in
+your ``.zshrc`` :
+
+.. code::
+
+    fpath+=(/path/to/fac/zsh)
+
+If you installed fac using pip as root, the script should automatically be installed in
+the right place (``/usr/share/zsh/site-functions``).
+
+With ``pip --user``, you'll need to add this in your ``.zshrc`` :
+
+.. code::
+
+    fpath+=(~/.local/share/zsh/site-functions)
+
+Changelog
+---------
+
+0.5
+    - Added workaround for 0.14 mods being considered as 0.13 mods.
+    - Added a ZSH completion script.
+    - Added ``-F, --format`` option to `search` command to customize the output format using format strings.
+    - Various bug fixes.
+
+0.4
+    - New `pack` and `unpack` commands to work on unpacked mods.
+    - New `fetch` command to fetch a mod without installing it.
+    - New `make-compatible` command to bump the `factorio_version` of an installed mod.
+    - New ``-l, --limit`` option to the `search` command.
+    - New ``-g, --game-version`` option to override the detected game version.
+    - New ``-i, --ignore-game-ver`` flag to ignore the current game version.
+    - Removed ``--force`` flag in favor of the more specfic ``-R, --reinstall``, ``-D, --downgrade``, ``-H, --held``.
+    - Accept patterns in `enable`, `pack`, `hold` commands.
+    - Resolve partial mod names.
+    - Various bug fixes.
+
+0.3
+    - Support for mods with spaces in their names.
+
+0.2
+    - Add -y flag to update and remove commands.
+    - Recursively create config directory.
+    - PyPI packaging.
+
+0.1
+    - Initial version.

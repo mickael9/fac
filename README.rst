@@ -411,6 +411,9 @@ With ``pip --user``, you'll need to add this in your ``.zshrc`` :
 
     fpath+=(~/.local/share/zsh/site-functions)
 
+Note: ``compinit`` must be called after `fpath` is changed so you must either put your changes before
+``compinit`` or add another ``compinit`` call after changing `fpath`.
+
 Changelog
 ---------
 

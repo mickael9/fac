@@ -126,6 +126,7 @@ _fac () {
             '(-d -a -u)-a[sort results alphabetically]' \
             '(-d -a -u)-u[sort results by most recently updated]' \
             '(-l --limit)'{-l+,--limit=}'[only show that many results]:limit:' \
+            '(-F --format)'{-F+,--format=}'[show results using the specified format string]:format string:' \
             ':term:'
             )
         ;;

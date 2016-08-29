@@ -1,38 +1,90 @@
 #compdef fac
 
+declare -g -A __fac_search_cache
+
+__fac_mods_disable() { __fac_mods -disabled; }
+__fac_mods_enable() { __fac_mods disabled; }
+__fac_mods_hold() { __fac_mods -held; }
+__fac_mods_unhold() { __fac_mods held; }
+__fac_mods_pack() { __fac_mods unpacked; }
+__fac_mods_unpack() { __fac_mods -unpacked; }
+__fac_mods_make-compatible() { __fac_mods incompatible; }
+
 __fac_mods () {
-  declare -a mods
-  if [[ $1 == ENABLED ]]; then
-    mods=(${(f)"$(_call_program fac fac list | tail -n+2  | grep -vF '(disabled' | awk '{print $1}')"})
-  elif [[ $1 == DISABLED ]]; then
-    mods=(${(f)"$(_call_program fac fac list | tail -n+2 | grep  -F '(disabled' | awk '{print $1}')"})
-  else
-    mods=(${(f)"$(_call_program fac fac list | tail -n+2 | awk '{print $1}')"})
-  fi
+  declare -a mods lines tags
+  local line name include specifier tag positive
+
+  lines=(${(f)"$(_call_program fac fac list)"})
+  for line in "${lines[@]}"; do
+    if [[ $line =~ '^\s{4}(.+) ([0-9.]+)( \(([^)]+)\))?' ]]; then
+      tags=(${(s:, :)match[4]})
+      name=${match[1]}
+      include=1
+      for specifier; do
+        if [[ ${specifier:0:1} == - ]]; then
+          tag=${specifier:1}
+          positive=0
+        else
+          tag=$specifier
+          positive=1
+        fi
+        found=${tags[(r)$tag]}
+        if (((  positive )) && [[ -z $found ]]) ||
+           (((! positive )) && [[ -n $found ]]); then
+          include=0
+          break
+        fi
+      done
+      (( include )) && mods+=($name)
+    fi
+  done
   _describe -t mods 'mods' mods
 }
 
 __fac_search () {
-  # TODO: version operators? dual column (human name : code name)?
-  declare -a mods
-  local word=$words[$CURRENT]
-  mods=(${(f)"$(_call_program fac fac search ${word} -a -l10 | egrep -v '^\s{4}' | awk 'NF > 0' | cut -d'(' -f2 | cut -d')' -f1)"})
-  _describe -t mods 'mods' mods
+  # TODO: version operators?
+  declare -A mods
+  declare -a desc
+  local search_result
+  local word=${(L)PREFIX}${(L)SUFFIX}
+
+  [[ ${word:0:1} == - ]] && return 1
+
+  [[ ${#word} -lt 3 ]] && {
+    _message -e mods "mods"
+    return 1
+  }
+
+  search_result=$__fac_search_cache[$word]
+
+  if [[ -z "$search_result" ]]; then
+    search_result=$(_call_program fac fac search -a -l25 -F \$\''{0.name}\n{0.title}'\' -- ${(q)word} 2>/dev/null)
+    __fac_search_cache[$word]="$search_result"
+  fi
+
+  mods=(${(f)search_result})
+
+  for name in ${(k)mods}; do
+    desc+=("$name:${mods[$name]//:/\\:}")
+  done
+
+  _describe -t mods 'mods' desc
 }
 
 _fac () {
-  local curcontext=$curcontext state ret=1
-  declare -a global_args
+  local curcontext=$curcontext state line
+  typeset -a opts
+  typeset -A opt_args
 
-  global_args=(
-    '(help)'{-h,--help}'[display help]' \
-    '(verbose)'{-v,--verbose}'[show more detailled output]' \
-    '(ignore-game-ver)'{-i,--ignore-game-ver}'[ignore game version when selecting packages]' \
-    '(game-version)'{-g,--game-version=}'[force a specific game version]:version')
+  opts=(
+    '(- :)'{-h,--help}'[display help]' \
+    '(-v --verbose)'{-v,--verbose}'[show more detailled output]' \
+    '(-i --ignore-game-ver)'{-i,--ignore-game-ver}'[ignore game version when selecting packages]' \
+    '(-g --game-version)'{-g+,--game-version=}'[force a specific game version]:game version:')
 
-  _arguments -C \
-    ': :->command' \
-    '*:: :->opt-or-arg' && ret=0
+  _arguments -s -S -C $opts \
+    '(-): :->command' \
+    '(-)*:: :->opt-or-arg' && return
 
   case $state in
     (command)
@@ -52,88 +104,70 @@ _fac () {
         'unpack:unpack mods' \
         'fetch:fetch a mod from the mod portal' \
         'make-compatible:change the supported factorio version of mods')
-      _arguments -S $global_args
-      _describe -t commands command commands
+      _describe -t commands command commands && ret=0
     ;;
     (opt-or-arg)
       curcontext=${curcontext%:*}-$line[1]:
       case $line[1] in
+        (enable|disable|hold|unhold|pack|unpack|make-compatible)
+          opts+=("*:mods:__fac_mods_${line[1]}")
+        ;|
+        (show|install|fetch)
+          opts+=("*:mods:__fac_search")
+        ;|
+
         (list)
-          _arguments -S $global_args
         ;;
-        (enable)
-          _arguments -S $global_args
-          __fac_mods DISABLED
-        ;;
-        (disable)
-          _arguments -S $global_args
-          __fac_mods ENABLED
-        ;;
+
         (search)
-          _arguments -S $global_args \
-            '*-t[filter by tag]:string' \
-            '-d[sort results by most downloaded]' \
-            '-a[sort results alphabetically]' \
-            '-u[sort results by most recently updated]' \
-            '(limit)'{-l,--limit=}'[only show that many results]:number'
-        ;;
-        (show)
-          _arguments -S $global_args
-          __fac_mods
+          opts+=(
+            '*-t+[filter by tag]:tag' \
+            '(-d -a -u)-d[sort results by most downloaded]' \
+            '(-d -a -u)-a[sort results alphabetically]' \
+            '(-d -a -u)-u[sort results by most recently updated]' \
+            '(-l --limit)'{-l+,--limit=}'[only show that many results]:limit:' \
+            ':term:'
+            )
         ;;
         (install)
-          _arguments -S $global_args \
-            {-H,--held}'[allow updating held mods]' \
-            {-R,--reinstall}'[allow reinstalling mods]' \
-            {-D,--downgrade}'[allow downgrading mods]' \
-            {-U,--unpack}'[unpack mods zip files]' \
-            {-d,--no-deps}'[do not install any dependencies]' \
-            '*:: :__fac_search'
+          opts+=(
+            '(-H --held)'{-H,--held}'[allow updating held mods]' \
+            '(-R --reinstall)'{-R,--reinstall}'[allow reinstalling mods]' \
+            '(-D --downgrade)'{-D,--downgrade}'[allow downgrading mods]' \
+            '(-U --unpack)'{-U,--unpack}'[unpack mods zip files]' \
+            '(-d --no-deps)'{-d,--no-deps}'[do not install any dependencies]')
         ;;
         (update)
-          _arguments -S $global_args \
-            {-s,--show}'[only show what would be updated]' \
-            {-y,--yes}'[automatic yes to confirmation prompt]' \
-            {-U,--unpacked}'[allow updating unpacked mods]' \
-            {-H,--held}'[allow updating held mods]'
-          __fac_mods
+          opts+=(
+            '(-s --show)'{-s,--show}'[only show what would be updated]' \
+            '(-y --yes)'{-y,--yes}'[automatic yes to confirmation prompt]' \
+            '(-U --unpacked)'{-U,--unpacked}'[allow updating unpacked mods]' \
+            '(-H --held)'{-H,--held}'[allow updating held mods]')
         ;;
         (remove)
-          _arguments -S $global_args \
-            {-y,--yes}'[automatic yes to confirmation prompt]' \
-            {-U,--unpacked}'[only remove unpacked mods]' \
-            {-P,--packed}'[only remove packed mods]'
-          __fac_mods
+          opts+=(
+            '(-y --yes)'{-y,--yes}'[automatic yes to confirmation prompt]' \
+            '(-U --unpacked)'{-U,--unpacked}'[only remove unpacked mods]' \
+            '(-P --packed)'{-P,--packed}'[only remove packed mods]' \
+            '*:mods:__fac_mods')
         ;;
-        (hold)
-          _arguments -S $global_args
-          __fac_mods
-        ;;
-        (unhold)
-          _arguments -S $global_args
-          __fac_mods
-        ;;
-        (unpack)
-          _arguments -S $global_args \
-            {-R,--replace}'[replace existing file/directory when packing/unpacking]' \
-            {-K,--keep}'[keep existing directory/file after packing/unpacking]'
-          __fac_mods
+        (pack|unpack)
+          opts+=(
+            '(-R --replace)'{-R,--replace}'[replace existing file/directory when packing/unpacking]' \
+            '(-K --keep)'{-K,--keep}'[keep existing directory/file after packing/unpacking]')
         ;;
         (fetch)
-          _arguments -S $global_args \
-            {-U,--unpack}'[unpack mods zip files after downloading]' \
-            {-K,--keep}'[keep mod zip file after unpacking]' \
-            {-d,--dest}'[destination directory (default: current directory)]:destination' \
-            {-R,--replace}'[replace existing file/directory]' \
-            '*:: :__fac_search'
-        ;;
-        (make-compatible)
-          _arguments -S $global_args
-          __fac_mods
+          opts+=(
+            '(-U --unpack)'{-U,--unpack}'[unpack mods zip files after downloading]' \
+            '(-K --keep)'{-K,--keep}'[keep mod zip file after unpacking]' \
+            '(-d --dest)'{-d+,--dest=}'[destination directory (default: current directory)]:destination:_files -/' \
+            '(-R --replace)'{-R,--replace}'[replace existing file/directory]')
         ;;
       esac
     ;;
   esac
+  _arguments -s -S $opts && ret=0
+  return ret
 }
 
 _fac "$@"

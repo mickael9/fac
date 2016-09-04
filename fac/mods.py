@@ -54,15 +54,6 @@ class Mod:
         except AttributeError:
             return '0.12'
 
-    def _check_valid(self):
-        expected_basename = "%s_%s" % (self.name, self.version)
-
-        assert self.basename == expected_basename, \
-            "Invalid file name %s, expected %s" % (
-                    self.basename,
-                    expected_basename
-            )
-
     @classmethod
     def _find(cls, pattern, manager, name, version):
         name = '*' if name is None else name
@@ -113,7 +104,6 @@ class ZippedMod(Mod):
             os.path.dirname(self.location)
         )
         self._read_info()
-        self._check_valid()
 
     def remove(self):
         print('Removing file: %s' % self.location)
@@ -233,7 +223,6 @@ class UnpackedMod(Mod):
         )
 
         self._read_info()
-        self._check_valid()
 
     def remove(self):
         print('Removing directory: %s' % self.location)

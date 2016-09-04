@@ -4,13 +4,25 @@ from fac.commands import Command, Arg
 class ListCommand(Command):
     'List installed mods and their status.'
 
+    _all_tags = ['disabled', 'unpacked', 'held', 'incompatible']
+
     name = 'list'
 
     arguments = [
+        Arg('-E', '--exclude', metavar='TAG', nargs='+', action='append',
+            default=[], choices=_all_tags,
+            help='exclude mods having any of the specified tags'),
+
+        Arg('-I', '--include', metavar='TAG', nargs='+', action='append',
+            default=[], choices=_all_tags,
+            help='only include mods having the specified tags'),
+
         Arg('-F', '--format',
             help='show installed mods using the specified format string.'),
     ]
     epilog = """
+    Available tags: %s
+
     An optional format string can be specified with the -F flag.
     You can use this if you want to customize the default output format.
 
@@ -35,7 +47,7 @@ class ListCommand(Command):
         {mod.location}      Mod file/directory path
         {mod.info}          info.json content as JSON
         {mod.info.dependencies}
-    """
+    """ % (', '.join(_all_tags))
 
     def run(self, args):
         mods = self.manager.find_mods()
@@ -44,8 +56,12 @@ class ListCommand(Command):
             return
 
         if not args.format:
-            print('Installed mods:')
+            if not args.include and not args.exclude:
+                print('Installed mods:')
+            else:
+                print('Matching mods:')
 
+        found = False
         for mod in sorted(mods, key=lambda m: (not m.enabled, m.name)):
             tags = []
             if not mod.enabled:
@@ -57,8 +73,12 @@ class ListCommand(Command):
             if mod.game_version != self.config.game_version_major:
                 tags.append('incompatible')
 
+            if any(tag in tags for l in args.exclude for tag in l) or \
+               any(tag not in tags for l in args.include for tag in l):
+                continue
 
             tags = ', '.join(tags)
+            found = True
 
             if args.format:
                 print(args.format.format(
@@ -70,3 +90,5 @@ class ListCommand(Command):
                 print('    %s %s%s' % (
                     mod.name, mod.version, tags
                 ))
+        if not found:
+            print('No matches found.')

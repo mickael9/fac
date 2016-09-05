@@ -21,7 +21,7 @@ class Mod:
 
     def __init__(self, manager, location):
         self.manager = manager
-        self.location = location
+        self.location = os.path.realpath(location)
 
     def get_enabled(self):
         return self.manager.is_mod_enabled(self.name)
@@ -214,9 +214,7 @@ class UnpackedMod(Mod):
             self.location = os.path.dirname(self.location)
 
         self.basename = os.path.basename(
-            os.path.realpath(
-                self.location
-            )
+            self.location
         )
         self.parent = os.path.realpath(
             os.path.join(self.location, '..')

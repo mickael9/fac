@@ -106,6 +106,8 @@ It is further divided into several subcommands:
     general options:
       -g GAME_VERSION, --game-version GAME_VERSION
                             force a specific game version
+      -m MODS_DIRECTORY, --mods-directory MODS_DIRECTORY
+                            use the specified mods directory
       -i, --ignore-game-ver
                             ignore game version when selecting packages
       -v, --verbose         show more detailled output

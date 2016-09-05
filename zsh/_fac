@@ -1,74 +1,74 @@
 #compdef fac
 
-declare -g -A __fac_search_cache
+typeset -g -A __fac_search_cache
+typeset -g -A __fac_opt_args
 
-__fac_mods_disable() { __fac_mods -disabled; }
-__fac_mods_enable() { __fac_mods disabled; }
-__fac_mods_hold() { __fac_mods -held; }
-__fac_mods_unhold() { __fac_mods held; }
-__fac_mods_pack() { __fac_mods unpacked; }
-__fac_mods_unpack() { __fac_mods -unpacked; }
-__fac_mods_make-compatible() { __fac_mods incompatible; }
+zstyle ':completion::complete:fac-*:*:local-mods' matcher 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}'
 
 __fac_mods () {
-  declare -a mods lines tags
-  local line name include specifier tag positive
+  local tag flag='-E'
 
-  lines=(${(f)"$(_call_program fac fac list)"})
-  for line in "${lines[@]}"; do
-    if [[ $line =~ '^\s{4}(.+) ([0-9.]+)( \(([^)]+)\))?' ]]; then
-      tags=(${(s:, :)match[4]})
-      name=${match[1]}
-      include=1
-      for specifier; do
-        if [[ ${specifier:0:1} == - ]]; then
-          tag=${specifier:1}
-          positive=0
-        else
-          tag=$specifier
-          positive=1
-        fi
-        found=${tags[(r)$tag]}
-        if (((  positive )) && [[ -z $found ]]) ||
-           (((! positive )) && [[ -n $found ]]); then
-          include=0
-          break
-        fi
-      done
-      (( include )) && mods+=($name)
-    fi
+  case $words[1] in
+    (enable|disable)  tag=disabled     ;|
+    (pack|unpack)     tag=unpacked     ;|
+    (hold|unhold)     tag=held         ;|
+    (make-compatible) tag=incompatible ;|
+
+    (enable|unhold|pack|make-compatible)
+      flag='-I'
+    ;;
+  esac
+
+  local cmd="fac list -F $'{mod.name}\\n{mod.info.title}'"
+  [[ -n $tag ]] && cmd+=" $flag $tag"
+
+  typeset -A mod_lines=(${(f)"$(_call_program fac $cmd)"})
+  typeset -a mods
+  local name
+
+  for name in ${(k)mod_lines}; do
+    (( $+line[(re)$name] )) && continue
+    mods+=($name:${mod_lines[$name]//:/\:})
   done
-  _describe -t mods 'mods' mods
+
+  _describe -t local-mods "mods to ${words[1]//_/ }" mods
 }
 
 __fac_search () {
   # TODO: version operators?
-  declare -A mods
-  declare -a desc
-  local search_result
   local word=${(L)PREFIX}${(L)SUFFIX}
 
   [[ ${word:0:1} == - ]] && return 1
-
   [[ ${#word} -lt 3 ]] && {
-    _message -e mods "mods"
+    _message -e remote-mods "mods to $words[1]"
     return 1
   }
 
-  search_result=$__fac_search_cache[$word]
+  typeset -A args=("${(@kv)opt_args}" "${(@kv)__fac_opt_args}")
 
-  if [[ -z "$search_result" ]]; then
-    search_result=$(_call_program fac fac search -a -l25 -F \$\''{0.name}\n{0.title}'\' -- ${(q)word} 2>/dev/null)
-    __fac_search_cache[$word]="$search_result"
+  local cmd="fac search -a -l25 -F $'{0.name}\\n{0.title}' "
+  cmd+="${(kv)args[(I)-g|--game-version|-i|--ignore-game-ver]}"
+  cmd+=" -- ${(q)word}"
+
+  local search_result
+  if (( ${+__fac_search_cache[$cmd]} )); then
+    search_result=$__fac_search_cache[$cmd]
+  else
+    search_result=$(_call_program fac $cmd 2>/dev/null)
+    __fac_search_cache[$cmd]="$search_result"
   fi
 
-  mods=(${(f)search_result})
+  typeset -A mods=(${(f)search_result})
+  typeset -a desc
 
   for name in ${(k)mods}; do
+    (( $+line[(re)$name] )) && continue
     desc+=("$name:${mods[$name]//:/\\:}")
   done
 
-  _describe -t mods 'mods' desc
+  _describe -t remote-mods "mods to $words[1]" desc -U
+  compstate[insert]=menu
+  compstate[list]='list force'
 }
 
 _fac () {
@@ -79,12 +79,15 @@ _fac () {
   opts=(
     '(- :)'{-h,--help}'[display help]' \
     '(-v --verbose)'{-v,--verbose}'[show more detailled output]' \
+    '(-m --mods-directory)'{-m+,--mods-directory=}'[use the specified mods directory]: :_directories' \
     '(-i --ignore-game-ver)'{-i,--ignore-game-ver}'[ignore game version when selecting packages]' \
     '(-g --game-version)'{-g+,--game-version=}'[force a specific game version]:game version:')
 
   _arguments -s -S -C $opts \
     '(-): :->command' \
     '(-)*:: :->opt-or-arg' && return
+
+  __fac_opt_args=("${(@kv)opt_args}")
 
   case $state in
     (command)
@@ -109,25 +112,30 @@ _fac () {
     (opt-or-arg)
       curcontext=${curcontext%:*}-$line[1]:
       case $line[1] in
-        (enable|disable|hold|unhold|pack|unpack|make-compatible)
-          opts+=("*:mods:__fac_mods_${line[1]}")
+        (enable|disable|hold|unhold|pack|unpack|remove|make-compatible)
+          opts+=("*:mods:__fac_mods")
         ;|
         (show|install|fetch)
           opts+=("*:mods:__fac_search")
         ;|
 
         (list)
+          local tags=(disabled unpacked held incompatible)
+          opts+=(
+            '*'{-I+,--include=}"[only include mods having the specified tags]:tag:($tags)" \
+            '*'{-E+,--exclude=}"[exclude mods having any of the specified tags]:tag:($tags)" \
+            '(-F --format)'{-F+,--format=}'[show installed mods using the specified format string]:format string:')
         ;;
 
         (search)
           opts+=(
-            '*-t+[filter by tag]:tag' \
+            '*-t+[filter by tag]:tag:' \
             '(-d -a -u)-d[sort results by most downloaded]' \
             '(-d -a -u)-a[sort results alphabetically]' \
             '(-d -a -u)-u[sort results by most recently updated]' \
             '(-l --limit)'{-l+,--limit=}'[only show that many results]:limit:' \
             '(-F --format)'{-F+,--format=}'[show results using the specified format string]:format string:' \
-            ':term:'
+            '::query:'
             )
         ;;
         (install)
@@ -149,8 +157,7 @@ _fac () {
           opts+=(
             '(-y --yes)'{-y,--yes}'[automatic yes to confirmation prompt]' \
             '(-U --unpacked)'{-U,--unpacked}'[only remove unpacked mods]' \
-            '(-P --packed)'{-P,--packed}'[only remove packed mods]' \
-            '*:mods:__fac_mods')
+            '(-P --packed)'{-P,--packed}'[only remove packed mods]')
         ;;
         (pack|unpack)
           opts+=(
@@ -161,7 +168,7 @@ _fac () {
           opts+=(
             '(-U --unpack)'{-U,--unpack}'[unpack mods zip files after downloading]' \
             '(-K --keep)'{-K,--keep}'[keep mod zip file after unpacking]' \
-            '(-d --dest)'{-d+,--dest=}'[destination directory (default: current directory)]:destination:_files -/' \
+            '(-d --dest)'{-d+,--dest=}'[destination directory (default: current directory)]:destination:_directories' \
             '(-R --replace)'{-R,--replace}'[replace existing file/directory]')
         ;;
       esac

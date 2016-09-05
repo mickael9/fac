@@ -1,8 +1,6 @@
-from pkg_resources import parse_version
-
 from fac.commands import Command, Arg
 from fac.api import ModNotFoundError
-from fac.utils import prompt
+from fac.utils import prompt, Version
 
 
 class UpdateCommand(Command):
@@ -41,8 +39,8 @@ class UpdateCommand(Command):
                         release.factorio_version != game_ver:
                     continue
 
-                release_ver = parse_version(release.version)
-                local_ver = parse_version(local_mod.version)
+                release_ver = Version(release.version)
+                local_ver = local_mod.version
 
                 if release_ver > local_ver:
                     print('Found update: %s %s' % (

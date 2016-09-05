@@ -9,10 +9,9 @@ from pathlib import Path
 from glob import glob
 
 import requests
-from pkg_resources import parse_version
 
 from fac.files import JSONFile
-from fac.utils import JSONDict
+from fac.utils import JSONDict, Version
 from fac.api import AuthError, ModNotFoundError
 
 
@@ -45,14 +44,14 @@ class Mod:
 
     @property
     def version(self):
-        return self.info.version
+        return Version(self.info.version)
 
     @property
     def game_version(self):
         try:
-            return self.info.factorio_version
+            return Version(self.info.factorio_version)
         except AttributeError:
-            return '0.12'
+            return Version('0.12')
 
     @classmethod
     def _find(cls, pattern, manager, name, version):
@@ -360,7 +359,7 @@ class ModManager:
                if release.version in spec and
                (ignore_game_ver or
                 release.factorio_version == game_ver)]
-        res.sort(key=lambda r: parse_version(r.version), reverse=True)
+        res.sort(key=lambda r: Version(r.version), reverse=True)
         return res
 
     def resolve_local_requirement(self, req, ignore_game_ver=False):
@@ -370,7 +369,7 @@ class ModManager:
         res = [mod for mod in self.find_mods(req.name)
                if mod.version in spec and
                (ignore_game_ver or mod.factorio_version == game_ver)]
-        res.sort(key=lambda m: parse_version(m.version), reverse=True)
+        res.sort(key=lambda m: m.version, reverse=True)
         return res
 
     def is_mod_enabled(self, name):

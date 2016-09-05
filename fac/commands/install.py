@@ -1,8 +1,6 @@
-from pkg_resources import parse_version
-
 from fac.commands import Command, Arg
 from fac.api import ModNotFoundError
-from fac.utils import parse_requirement, Requirement
+from fac.utils import parse_requirement, Requirement, Version
 
 
 class InstallCommand(Command):
@@ -76,8 +74,8 @@ class InstallCommand(Command):
 
             for release in releases:
                 if local_mod:
-                    local_ver = parse_version(local_mod.version)
-                    release_ver = parse_version(release.version)
+                    local_ver = local_mod.version
+                    release_ver = Version(release.version)
 
                     if not args.reinstall and release_ver == local_ver:
                         print('%s==%s is already installed. '

@@ -1,9 +1,11 @@
 import re
 import sys
 import json
+import packaging.version
 from collections import UserDict, UserList, namedtuple
 
-__all__ = ['JSONList', 'JSONDict', 'prompt']
+__all__ = ['JSONList', 'JSONDict', 'prompt', 'parse_requirement',
+           'Requirement', 'Version']
 
 
 class JSONList(UserList):
@@ -92,6 +94,18 @@ REQUIREMENT_RE = re.compile(
 
 Requirement = namedtuple('Requirement', 'name specifier')
 Requirement.__str__ = lambda self: '%s%s' % (self.name, self.specifier)
+
+
+class Version(packaging.version.Version):
+    def __init__(self, version):
+        if isinstance(version, packaging.version.Version):
+            version = str(version)
+        super().__init__(version)
+
+    def _compare(self, other, method):
+        if isinstance(other, str):
+            other = Version(other)
+        return super()._compare(other, method)
 
 
 def parse_requirement(text):

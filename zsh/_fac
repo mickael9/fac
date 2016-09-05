@@ -46,7 +46,7 @@ __fac_search () {
 
   typeset -A args=("${(@kv)opt_args}" "${(@kv)__fac_opt_args}")
 
-  local cmd="fac search -a -l25 -F $'{0.name}\\n{0.title}' "
+  local cmd="fac search -a -l25 -F $'{result.name}\\n{result.title}' "
   cmd+="${(kv)args[(I)-g|--game-version|-i|--ignore-game-ver]}"
   cmd+=" -- ${(q)word}"
 

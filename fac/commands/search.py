@@ -43,18 +43,18 @@ class SearchCommand(Command):
     You can use this if you want to customize the default output format.
 
     The syntax of format strings is decribed here:
-    https://docs.python.org/2/library/string.html#format-string-syntax
+    https://docs.python.org/3/library/string.html#format-string-syntax
 
     There is only one argument passed to the format string which is the
     result object returned by the API.
 
-    Using the default string ('s') specifier on a list or object will
+    Using the default string ('s') specifier on a JSON list or object will
     output valid JSON.
 
     Some examples:
-        {0.name}                     Name of the mod
-        {0}                          JSON-repesentation of the result object
-        {0.latest_release.version}   Latest release version
+        {result.name}                   Name of the mod
+        {result}                        JSON-repesentation of the result object
+        {result.latest_release.version} Latest release version
     """
 
     def run(self, args):

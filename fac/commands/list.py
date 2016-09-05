@@ -27,13 +27,13 @@ class ListCommand(Command):
     You can use this if you want to customize the default output format.
 
     The syntax of format strings is decribed here:
-    https://docs.python.org/2/library/string.html#format-string-syntax
+    https://docs.python.org/3/library/string.html#format-string-syntax
 
     The provided arguments to the format string are:
         mod  : the mod object (see examples)
         tags : the tags as a space-separated string
 
-    Using the default string ('s') specifier on a json list or object will
+    Using the default string ('s') specifier on a JSON list or object will
     output valid JSON.
 
     Some examples:

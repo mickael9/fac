@@ -56,6 +56,9 @@ def main():
 
     args = root_parser.parse_args()
 
+    # Allow common options both before and after command
+    common_parser.parse_known_args(namespace=args)
+
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
 

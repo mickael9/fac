@@ -56,6 +56,7 @@ class Config(ConfigParser):
         self.read_string(self.default_config)
         self.hold = []
         self.forced_game_version = None
+        self.forced_mods_directory = None
 
         if config_file:
             self.config_file = config_file
@@ -173,9 +174,15 @@ class Config(ConfigParser):
     def game_version_major(self):
         return '.'.join(self.game_version.split('.')[:2])
 
-    @property
-    def mods_path(self):
+    def get_mods_directory(self):
+        if self.forced_mods_directory:
+            return self.forced_mods_directory
         return os.path.join(self.factorio_write_path, 'mods')
+
+    def set_mods_directory(self, directory):
+        self.forced_mods_directory = directory
+
+    mods_directory = property(get_mods_directory, set_mods_directory)
 
 
 class JSONFile(JSONDict):

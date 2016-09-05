@@ -21,6 +21,11 @@ def main():
     )
 
     common_group.add_argument(
+        '-m', '--mods-directory',
+        help='use the specified mods directory'
+    )
+
+    common_group.add_argument(
         '-i', '--ignore-game-ver', action='store_true',
         help='ignore game version when selecting packages'
     )
@@ -65,8 +70,12 @@ def main():
     if args.game_version:
         config.game_version = args.game_version
 
+    if args.mods_directory:
+        config.mods_directory = args.mods_directory
+
     log.debug('Factorio write path: %s', config.factorio_write_path)
     log.debug('Factorio game path: %s', config.factorio_data_path)
+    log.debug('Mods directory: %s', config.mods_directory)
     log.debug('Factorio version: %s', config.game_version)
 
     if args.command:

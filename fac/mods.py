@@ -60,7 +60,7 @@ class Mod:
 
         installed = glob(
             os.path.join(
-                manager.config.mods_path,
+                manager.config.mods_directory,
                 pattern
             )
         )
@@ -282,7 +282,7 @@ class ModManager:
         self.config = config
         self.mods_json = JSONFile(
             os.path.join(
-                self.config.mods_path,
+                self.config.mods_directory,
                 'mod-list.json'
             )
         )
@@ -463,7 +463,7 @@ class ModManager:
         mod_name = release.info_json.name
         file_name = release.file_name
         self.validate_mod_file_name(file_name)
-        file_path = os.path.join(self.config.mods_path, file_name)
+        file_path = os.path.join(self.config.mods_directory, file_name)
 
         installed_mod = self.get_mod(mod_name)
         if installed_mod and unpack is None:

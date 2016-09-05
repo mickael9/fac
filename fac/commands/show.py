@@ -8,11 +8,34 @@ class ShowCommand(Command):
     name = 'show'
     arguments = [
         Arg('mods', help='mods to show', nargs='+'),
+
+        Arg('-F', '--format',
+            help='show mods using the specified format string.'),
     ]
 
-    def run(self, opts):
+    epilog = """
+    An optional format string can be specified with the -F flag.
+    You can use this if you want to customize the default output format.
+
+    The syntax of format strings is decribed here:
+    https://docs.python.org/3/library/string.html#format-string-syntax
+
+    There is only one argument passed to the format string which is the
+    mod object returned by the API.
+
+    Using the default string ('s') specifier on a JSON list or object will
+    output valid JSON.
+
+    Some examples:
+        {mod}                        JSON as returned by the API
+        {mod.name}                   Name of the mod
+        {mod.releases[0].version}    Version of first release
+        {mod.releases[0].info_json}  info.json of first release
+    """
+
+    def run(self, args):
         first = True
-        for mod in opts.mods:
+        for mod in args.mods:
             if first:
                 first = False
             else:
@@ -23,6 +46,10 @@ class ShowCommand(Command):
                 m = self.api.get(mod)
             except ModNotFoundError as ex:
                 print('Error: %s' % ex)
+                continue
+
+            if args.format:
+                print(args.format.format(m, mod=m))
                 continue
 
             print('Name: %s' % m.name)

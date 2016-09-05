@@ -127,6 +127,11 @@ _fac () {
             '(-F --format)'{-F+,--format=}'[show installed mods using the specified format string]:format string:')
         ;;
 
+        (show)
+          opts+=(
+            '(-F --format)'{-F+,--format=}'[show mods using the specified format string]:format string:')
+        ;;
+
         (search)
           opts+=(
             '*-t+[filter by tag]:tag:' \

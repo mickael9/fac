@@ -90,5 +90,5 @@ class ListCommand(Command):
                 print('    %s %s%s' % (
                     mod.name, mod.version, tags
                 ))
-        if not found:
+        if not found and not args.format:
             print('No matches found.')

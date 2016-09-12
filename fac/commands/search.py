@@ -79,7 +79,7 @@ class SearchCommand(Command):
                     continue
 
             if args.format:
-                print(args.format.format(result))
+                print(args.format.format(result, result=result))
             else:
                 print(result.title)
                 print('    Name: %s' % result.name)

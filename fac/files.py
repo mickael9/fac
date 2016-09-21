@@ -105,11 +105,17 @@ class Config(ConfigParser):
     @property
     def factorio_data_path(self):
         path = self.get('paths', 'data-path')
-        if path and not self.is_factorio_data_path(path):
+
+        if path and self.is_factorio_data_path(path):
+            return path
+        elif path:
             raise Exception(
-                'Factorio data path does not seem to be correct'
-                )
-        elif not path:
+                'The supplied data path (%s) does not seem to be correct.\n'
+                'Please check the data-path variable in %s and make sure it '
+                'points to a data directory containing a base/info.json file.'
+                % (path, self.config_file)
+            )
+        else:
             for path in FACTORIO_SEARCH_PATHS:
                 path = os.path.expanduser(path)
                 path = os.path.expandvars(path)
@@ -118,6 +124,7 @@ class Config(ConfigParser):
                 path = os.path.join(path, 'data')
                 if self.is_factorio_data_path(path):
                     return path
+
         raise Exception(
             'Can not find the factorio data path.\n'
             'Please set the data-path variable in %s' % (
@@ -128,19 +135,29 @@ class Config(ConfigParser):
     @property
     def factorio_write_path(self):
         path = self.get('paths', 'write-path')
-        if path and not self.is_factorio_write_path(path):
+
+        if path and self.is_factorio_write_path(path):
+            return path
+        elif path:
             raise Exception(
-                'Factorio writable path does not seem to be correct'
+                'The supplied write path (%s) does not seem to be correct.\n'
+                'Please check the write-path variable in %s and make sure it '
+                "points to a directory containing writeable 'config' and "
+                "'mods' subdirectories." % (
+                    path,
+                    self.config_file,
+                )
             )
-        elif not path:
+        else:
             for path in FACTORIO_SEARCH_PATHS:
                 path = os.path.expanduser(path)
                 path = os.path.expandvars(path)
                 if self.is_factorio_write_path(path):
                     return path
+
         raise Exception(
-            'Can not find the factorio write path.\n'
-            'Please set the write-path variable in %s' % (
+            'Can not find a valid factorio write path.\n'
+            'Please set one using the write-path variable in %s' % (
                 self.config_file
             )
         )

@@ -419,6 +419,16 @@ Note: ``compinit`` must be called after `fpath` is changed so you must either pu
 Changelog
 ---------
 
+0.6
+    - Added ``-F, --format`` to `list` and `show` commands.
+    - Added ``-I, --include`` and ``-E, --exclude`` to `list` commands.
+    - Added ``-m, --mods-directory`` option to use a specific mods directory.
+    - Added fac version to output when using ``-v, --verbose``.
+    - Improved ZSH completion script.
+    - Fixed `write-path` and `data-path` being ignored from config.ini
+    - Fixed `search` command format string argument.
+    - Fixed options parsing to allow general options anywhere in the command line.
+
 0.5
     - Added workaround for 0.14 mods being considered as 0.13 mods.
     - Added a ZSH completion script.

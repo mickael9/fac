@@ -73,6 +73,7 @@ def main():
     if args.mods_directory:
         config.mods_directory = args.mods_directory
 
+    log.debug('fac version: %s' % fac.__version__)
     log.debug('Factorio write path: %s', config.factorio_write_path)
     log.debug('Factorio game path: %s', config.factorio_data_path)
     log.debug('Mods directory: %s', config.mods_directory)

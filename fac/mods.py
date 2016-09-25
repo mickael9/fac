@@ -368,7 +368,7 @@ class ModManager:
 
         res = [mod for mod in self.find_mods(req.name)
                if mod.version in spec and
-               (ignore_game_ver or mod.factorio_version == game_ver)]
+               (ignore_game_ver or mod.game_version == game_ver)]
         res.sort(key=lambda m: m.version, reverse=True)
         return res
 

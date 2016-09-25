@@ -207,6 +207,7 @@ class JSONFile(JSONDict):
 
     def __init__(self, file):
         self.file = file
+        self.data = {}
         self.reload()
 
     def __enter__(self):
@@ -216,6 +217,9 @@ class JSONFile(JSONDict):
         self.save()
 
     def reload(self):
+        if not os.path.exists(self.file):
+            return
+
         with open(self.file, 'r', encoding='utf-8') as f:
             self.data = json.load(f)
 

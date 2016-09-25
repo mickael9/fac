@@ -7,7 +7,7 @@ import requests
 
 from fac.utils import JSONDict
 
-__all__ = ['API', 'ModNotFoundError', 'AuthError']
+__all__ = ['API', 'ModNotFoundError', 'AuthError', 'OwnershipError']
 
 BASE_URL = 'https://mods.factorio.com/api/'
 LOGIN_URL = 'https://auth.factorio.com/api-login'
@@ -64,9 +64,10 @@ class API:
 
         return JSONDict(resp.json())
 
-    def login(self, username, password):
+    def login(self, username, password, require_ownership=False):
         resp = self.session.post(
             self.login_url,
+            params=dict(require_game_ownership=int(require_ownership)),
             data=dict(username=username, password=password)
         )
 
@@ -80,12 +81,19 @@ class API:
             return json[0]
         except requests.HTTPError:
             if isinstance(json, dict) and 'message' in json:
-                raise AuthError(json['message'])
+                if json['message'] == 'Insufficient membership':
+                    raise OwnershipError(json['message'])
+                else:
+                    raise AuthError(json['message'])
             else:
                 raise
 
 
 class AuthError(Exception):
+    pass
+
+
+class OwnershipError(AuthError):
     pass
 
 

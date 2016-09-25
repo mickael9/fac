@@ -12,7 +12,7 @@ import requests
 
 from fac.files import JSONFile
 from fac.utils import JSONDict, Version
-from fac.api import AuthError, ModNotFoundError
+from fac.api import AuthError, OwnershipError, ModNotFoundError
 
 
 class Mod:
@@ -409,14 +409,14 @@ class ModManager:
         self.config.save()
         return True
 
-    def require_login(self):
+    def require_login(self, reset=False):
         import getpass
         import sys
         player_data = self.config.player_data
         username = player_data.get('service-username')
         token = player_data.get('service-token')
 
-        if not (username and token):
+        if reset or not (username and token):
             print('You need a Factorio account to download mods.')
             print('Please provide your username and password to authenticate '
                   'yourself.')
@@ -442,7 +442,13 @@ class ModManager:
                     continue
 
                 try:
-                    token = self.api.login(username, password)
+                    token = self.api.login(username, password,
+                                           require_ownership=True)
+                except OwnershipError as ex:
+                    print("Ownership error: Your factorio account doesn't "
+                          "own the game.")
+                    print("Please buy the game or link your Steam account if "
+                          "you have bought the game from Steam.")
                 except AuthError as ex:
                     print('Authentication error: %s.' % ex)
                 except Exception as ex:
@@ -497,15 +503,25 @@ class ModManager:
         player_data = self.require_login()
         url = urljoin(self.api.base_url, release.download_url)
 
-        print('Downloading: %s...' % url)
+        while True:
+            print('Downloading: %s...' % url)
 
-        req = requests.get(
-            url,
-            params={
-                'username': player_data['service-username'],
-                'token': player_data['service-token']
-            }
-        )
+            req = requests.get(
+                url,
+                params={
+                    'username': player_data['service-username'],
+                    'token': player_data['service-token']
+                }
+            )
+
+            if req.status_code == 403:
+                print('Authentification error when downloading mod. '
+                      'Please login again.')
+                player_data = self.require_login(reset=True)
+                continue
+            break
+
+        req.raise_for_status()
         data = req.content
 
         if len(data) != release.file_size:

@@ -515,7 +515,7 @@ class ModManager:
             )
 
             if req.status_code == 403:
-                print('Authentification error when downloading mod. '
+                print('Authentication error when downloading mod. '
                       'Please login again.')
                 player_data = self.require_login(reset=True)
                 continue

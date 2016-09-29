@@ -419,6 +419,10 @@ Note: ``compinit`` must be called after `fpath` is changed so you must either pu
 Changelog
 ---------
 
+0.7
+    - Added more friendly error messages when the user doesn't own the game
+    - Fixed "AttributeError: 'ZippedMod' object has no attribute 'factorio_version'" (#8)
+
 0.6
     - Added ``-F, --format`` to `list` and `show` commands.
     - Added ``-I, --include`` and ``-E, --exclude`` to `list` commands.

@@ -375,7 +375,8 @@ class ModManager:
     def is_mod_enabled(self, name):
         mod = self.get_mod_json(name)
         if mod:
-            return mod.enabled != 'false'
+            # Factorio < 0.15 uses "true"/"false" strings instead of booleans
+            return mod.enabled != 'false' and mod.enabled is not False
         else:
             return True  # by default, new mods are automatically enabled
 
@@ -387,8 +388,12 @@ class ModManager:
             self.mods_json.mods.append(mod)
             mod = self.get_mod_json(name)
 
-        if enabled != (mod.enabled == 'true'):
-            mod.enabled = 'true' if enabled else 'false'
+        if enabled != self.is_mod_enabled(name):
+            if self.config.game_version < Version('0.15'):
+                # Factorio < 0.15 uses "true"/"false" strings instead of booleans
+                mod.enabled = 'true' if enabled else 'false'
+            else:
+                mod.enabled = enabled
             self.mods_json.save()
             return True
         else:

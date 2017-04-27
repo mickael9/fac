@@ -4,6 +4,8 @@ from urllib.parse import quote
 from functools import lru_cache
 
 import requests
+from requests.packages.urllib3.util import Retry
+from requests.adapters import HTTPAdapter
 
 from fac.utils import JSONDict
 
@@ -21,6 +23,9 @@ class API:
         self.login_url = login_url
         self.url = base_url.rstrip('/') + '/mods'
         self.session = session or requests.session()
+        adapter = HTTPAdapter(max_retries=Retry(status_forcelist=[503]))
+        self.session.mount('https://', adapter)
+        self.session.mount('http://', adapter)
 
     def search(self,
                query, tags=[],
@@ -54,7 +59,7 @@ class API:
                 break
 
     @lru_cache()
-    def get(self, mod_name):
+    def get_mod(self, mod_name):
         resp = self.session.get('%s/%s' % (self.url, quote(mod_name)))
         if resp.status_code == 404:
             raise ModNotFoundError(
@@ -87,6 +92,9 @@ class API:
                     raise AuthError(json['message'])
             else:
                 raise
+
+    def get(self, *args, **kwargs):
+        return self.session.get(*args, **kwargs)
 
 
 class AuthError(Exception):

@@ -43,7 +43,7 @@ class ShowCommand(Command):
 
             mod = self.manager.resolve_mod_name(mod, remote=True)
             try:
-                m = self.api.get(mod)
+                m = self.api.get_mod(mod)
             except ModNotFoundError as ex:
                 print('Error: %s' % ex)
                 continue

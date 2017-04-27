@@ -29,7 +29,7 @@ class UpdateCommand(Command):
         for local_mod in installed:
             print('Checking: %s' % local_mod.name)
             try:
-                remote_mod = self.api.get(local_mod.name)
+                remote_mod = self.api.get_mod(local_mod.name)
             except ModNotFoundError as ex:
                 print('Warning: %s' % ex)
                 continue

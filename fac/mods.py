@@ -8,8 +8,6 @@ from zipfile import ZipFile
 from pathlib import Path
 from glob import glob
 
-import requests
-
 from fac.files import JSONFile
 from fac.utils import JSONDict, Version
 from fac.api import AuthError, OwnershipError, ModNotFoundError
@@ -319,7 +317,7 @@ class ModManager:
         if remote:
             # Find an exact remote match
             try:
-                mod = self.api.get(name)
+                mod = self.api.get_mod(name)
                 return mod.name
             except ModNotFoundError:
                 pass
@@ -353,7 +351,7 @@ class ModManager:
         spec = req.specifier
         game_ver = self.config.game_version_major
 
-        mod = self.api.get(req.name)
+        mod = self.api.get_mod(req.name)
 
         res = [release for release in mod.releases
                if release.version in spec and
@@ -511,7 +509,7 @@ class ModManager:
         while True:
             print('Downloading: %s...' % url)
 
-            req = requests.get(
+            req = self.api.get(
                 url,
                 params={
                     'username': player_data['service-username'],

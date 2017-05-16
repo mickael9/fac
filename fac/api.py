@@ -23,7 +23,7 @@ class API:
         self.login_url = login_url
         self.url = base_url.rstrip('/') + '/mods'
         self.session = session or requests.session()
-        adapter = HTTPAdapter(max_retries=Retry(status_forcelist=[503]))
+        adapter = HTTPAdapter(max_retries=Retry(status_forcelist=[500, 503]))
         self.session.mount('https://', adapter)
         self.session.mount('http://', adapter)
 

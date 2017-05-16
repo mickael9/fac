@@ -419,6 +419,17 @@ Note: ``compinit`` must be called after `fpath` is changed so you must either pu
 Changelog
 ---------
 
+0.8
+    - Added automatic retries of network requests to the API
+    - Added pagination options to `search` command:
+
+      - ``-p, --page``: starting page number for the API calls
+      - ``-s, --page-size``: maximum number of returned results per page
+      - ``-c, --page-count``: maximum number of pages to fetch
+
+    - Fixed Factorio 0.15 compatibility (use booleans in mod-list.json)
+    - Fixed ``-m, --mods-directory`` being ignored when loading mod-list.json
+
 0.7
     - Added more friendly error messages when the user doesn't own the game
     - Fixed "AttributeError: 'ZippedMod' object has no attribute 'factorio_version'" (#8)

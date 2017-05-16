@@ -138,7 +138,10 @@ _fac () {
             '(-d -a -u)-d[sort results by most downloaded]' \
             '(-d -a -u)-a[sort results alphabetically]' \
             '(-d -a -u)-u[sort results by most recently updated]' \
-            '(-l --limit)'{-l+,--limit=}'[only show that many results]:limit:' \
+            '(-l --limit)'{-l+,--limit=}'[stop after returning that many results]:limit:' \
+            '(-p --page)'{-p+,--page=}'[starting page number for the API calls]:page:' \
+            '(-s --page-size)'{-s+,--page-size=}'[maximum number of returned results per page]:page size:' \
+            '(-c --page-count)'{-c+,--page-count=}'[maximum number of pages to fetch]:page count:' \
             '(-F --format)'{-F+,--format=}'[show results using the specified format string]:format string:' \
             '::query:'
             )

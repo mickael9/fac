@@ -275,12 +275,17 @@ class ModManager:
     def __init__(self, config, api):
         self.api = api
         self.config = config
+        self.mods_json = None
+
+    def load(self):
         self.mods_json = JSONFile(
             os.path.join(
                 self.config.mods_directory,
                 'mod-list.json'
             )
         )
+        if 'mods' not in self.mods_json:
+            self.mods_json.mods = []
 
     def get_mod_json(self, name):
         """Return the mod json configuration from mods-list.json"""

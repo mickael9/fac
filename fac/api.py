@@ -29,12 +29,19 @@ class API:
 
     def search(self,
                query, tags=[],
-               order=DEFAULT_ORDER,
-               page_size=DEFAULT_PAGE_SIZE,
+               order=None,
+               page_size=None,
+               page_count=None,
                page=1,
                limit=0):
 
+        order = order or DEFAULT_ORDER
+        page_size = page_size or DEFAULT_PAGE_SIZE
+        end_page = None
         count = 0
+
+        if page_count:
+            end_page = page + page_count - 1
 
         while True:
             resp = self.session.get(self.url, params=dict(
@@ -55,7 +62,7 @@ class API:
                     return
 
             page += 1
-            if page > pages:
+            if page > pages or (end_page and page > end_page):
                 break
 
     @lru_cache()

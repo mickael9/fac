@@ -1,6 +1,7 @@
 import sys
 
 from fac.commands import Command, Arg
+from fac.api import DEFAULT_PAGE_SIZE
 from textwrap import fill
 from shutil import get_terminal_size
 
@@ -32,7 +33,17 @@ class SearchCommand(Command):
             const='updated'),
 
         Arg('-l', '--limit', type=int,
-            help='only show that many results'),
+            help='stop after returning that many results'),
+
+        Arg('-p', '--page', type=int, default=1,
+            help='starting page number for the API calls'),
+
+        Arg('-s', '--page-size', type=str,  # allow 'max' to be used
+            default=DEFAULT_PAGE_SIZE,
+            help='maximum number of returned results per page'),
+
+        Arg('-c', '--page-count', type=int,
+            help='maximum number of pages to fetch'),
 
         Arg('-F', '--format',
             help='show results using the specified format string.'),
@@ -64,6 +75,9 @@ class SearchCommand(Command):
 
         for result in self.api.search(
                 query=args.query or '',
+                page=args.page,
+                page_size=args.page_size,
+                page_count=args.page_count,
                 tags=tuple(args.tag),
                 order=args.sort):
 

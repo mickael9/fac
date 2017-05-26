@@ -18,7 +18,7 @@ class Mod:
 
     def __init__(self, manager, location):
         self.manager = manager
-        self.location = os.path.realpath(location)
+        self.location = os.path.abspath(location)
 
     def get_enabled(self):
         return self.manager.is_mod_enabled(self.name)
@@ -97,7 +97,7 @@ class ZippedMod(Mod):
                     self.location
                 )
         )[0]
-        self.parent = os.path.realpath(
+        self.parent = os.path.abspath(
             os.path.dirname(self.location)
         )
         self._read_info()
@@ -213,7 +213,7 @@ class UnpackedMod(Mod):
         self.basename = os.path.basename(
             self.location
         )
-        self.parent = os.path.realpath(
+        self.parent = os.path.abspath(
             os.path.join(self.location, '..')
         )
 

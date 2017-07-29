@@ -122,3 +122,11 @@ def parse_requirement(text):
     name = match.group('name').strip()
     spec = SpecifierSet(match.group('specifier') or '')
     return Requirement(name, spec)
+
+
+def parse_game_version(info):
+    try:
+        version = '.'.join(info.factorio_version.split('.')[:2])
+        return Version(version)
+    except AttributeError:
+        return Version('0.12')

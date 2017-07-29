@@ -1,10 +1,11 @@
 import sys
 
-from fac.commands import Command, Arg
-from fac.api import DEFAULT_PAGE_SIZE
 from textwrap import fill
 from shutil import get_terminal_size
 
+from fac.utils import parse_game_version
+from fac.commands import Command, Arg
+from fac.api import DEFAULT_PAGE_SIZE
 
 class SearchCommand(Command):
     'Search the mods database.'
@@ -85,7 +86,7 @@ class SearchCommand(Command):
 
             # apparently game_versions can't be trusted so cheat a bit here
             if game_ver not in result.game_versions and (
-                    game_ver != result.latest_release.factorio_version):
+                    game_ver != parse_game_version(result.latest_release)):
                 if args.ignore_game_ver:
                     tags.insert(0, 'incompatible')
                 else:

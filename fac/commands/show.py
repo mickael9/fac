@@ -1,5 +1,6 @@
 from fac.commands import Command, Arg
 from fac.api import ModNotFoundError
+from fac.utils import parse_game_version
 
 
 class ShowCommand(Command):
@@ -79,4 +80,6 @@ class ShowCommand(Command):
             else:
                 for release in m.releases:
                     print('    Version: %-9s Game version: %-9s' % (
-                        release.version, release.factorio_version))
+                        release.version,
+                        parse_game_version(release),
+                    ))

@@ -1,6 +1,6 @@
 from fac.commands import Command, Arg
 from fac.api import ModNotFoundError
-from fac.utils import prompt, Version
+from fac.utils import prompt, Version, parse_game_version
 
 
 class UpdateCommand(Command):
@@ -36,7 +36,7 @@ class UpdateCommand(Command):
 
             for release in remote_mod.releases:
                 if not args.ignore_game_ver and \
-                        release.factorio_version != game_ver:
+                        parse_game_version(release) != game_ver:
                     continue
 
                 release_ver = Version(release.version)

@@ -6,7 +6,7 @@ from configparser import ConfigParser
 
 from appdirs import user_config_dir, user_data_dir
 
-from fac.utils import JSONDict
+from fac.utils import JSONDict, Version
 
 __all__ = ['Config', 'JSONFile']
 
@@ -193,7 +193,7 @@ class Config(ConfigParser):
 
     @property
     def game_version_major(self):
-        return '.'.join(self.game_version.split('.')[:2])
+        return Version('.'.join(self.game_version.split('.')[:2]))
 
     def get_mods_directory(self):
         if self.forced_mods_directory:

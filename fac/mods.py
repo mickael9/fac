@@ -488,7 +488,7 @@ class ModManager:
 
         os.makedirs(os.path.dirname(tmp_file), exist_ok=True)
         self.download_mod(release, tmp_file)
-        os.rename(tmp_file, file_path)
+        shutil.move(tmp_file, file_path)
 
         mod = ZippedMod(self, file_path)
 

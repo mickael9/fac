@@ -467,8 +467,7 @@ class ModManager:
             player_data.save()
         return player_data
 
-    def install_mod(self, release, enable=None, unpack=None):
-        mod_name = release.info_json.name
+    def install_mod(self, mod_name, release, enable=None, unpack=None):
         file_name = release.file_name
         self.validate_mod_file_name(file_name)
         file_path = os.path.join(self.config.mods_directory, file_name)
@@ -528,13 +527,6 @@ class ModManager:
 
         req.raise_for_status()
         data = req.content
-
-        if len(data) != release.file_size:
-            raise Exception(
-                'Downloaded file has incorrect size (%d), expected %d.' % (
-                    len(data), release.file_size
-                )
-            )
 
         with open(file_path, 'wb') as f:
             f.write(data)

@@ -84,4 +84,4 @@ class UpdateCommand(Command):
                 return
 
             for local_mod, release in updates:
-                self.manager.install_mod(release)
+                self.manager.install_mod(local_mod.name, release)

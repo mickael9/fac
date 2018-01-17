@@ -143,16 +143,16 @@ class InstallCommand(Command):
                     print('Adding dependency: %s %s' % (
                         depreq.name, deprel.version
                     ))
-                    deps_to_install.append(deprel)
+                    deps_to_install.append((depreq.name, deprel))
 
                 if deps_ok:
                     to_install += deps_to_install
-                    to_install.append(release)
+                    to_install.append((name, release))
                     break
 
-        for release in to_install:
+        for name, release in to_install:
             print('Installing: %s %s...' % (
-                release.info_json.name, release.version
+                name, release.version
             ))
 
-            self.manager.install_mod(release, unpack=args.unpack)
+            self.manager.install_mod(name, release, unpack=args.unpack)

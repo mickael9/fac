@@ -419,6 +419,16 @@ Note: ``compinit`` must be called after `fpath` is changed so you must either pu
 Changelog
 ---------
 
+0.9
+    - Known issues:
+        - `search` command will list all existing mods regardless of the search critera.
+          This shall be addressed in a future release.
+
+    - Compatibility with the new mod portal
+    - Fix mod install failure across filesystems
+    - Search for Factorio installation in lowercase `steamapps` directory as well
+    - Don't follow symbolic links when packing/unpacking mods
+
 0.8
     - Added automatic retries of network requests to the API
     - Added pagination options to `search` command:

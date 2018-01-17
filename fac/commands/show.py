@@ -57,22 +57,30 @@ class ShowCommand(Command):
             print('Author: %s' % m.owner)
             print('Title: %s' % m.title)
             print('Summary: %s' % m.summary)
-            print('Description:')
 
-            for line in m.description.splitlines():
-                print('    %s' % line)
+            # if this ever comes back...
+            if 'description' in m:
+                print('Description:')
 
-            if m.tags:
+                for line in m.description.splitlines():
+                    print('    %s' % line)
+
+            if 'tags' in m and m.tags:
                 print('Tags: %s' % ', '.join(tag.name for tag in m.tags))
 
-            if m.homepage:
+            if 'homepage' in m and m.homepage:
                 print('Homepage: %s' % m.homepage)
 
-            if m.github_path:
+            if 'github_path' in m and m.github_path:
                 print('GitHub page: https://github.com/%s' % m.github_path)
 
-            print('License: %s' % m.license_name)
-            print('Game versions: %s' % ", ".join(m.game_versions))
+            if 'license_name' in m:
+                print('License: %s' % m.license_name)
+
+            game_versions = sorted(set(str(parse_game_version(release))
+                                       for release in m.releases))
+
+            print('Game versions: %s' % ", ".join(game_versions))
 
             print('Releases:')
             if not m.releases:

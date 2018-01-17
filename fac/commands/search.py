@@ -74,6 +74,11 @@ class SearchCommand(Command):
         count = 0
         game_ver = self.config.game_version_major
 
+        print("Note: search functionality is currently broken due to the "
+              "switch to the new mod portal and all mods will always be shown "
+              "regardless of the search criteria. This shall be adressed in a "
+              "future release.")
+
         for result in self.api.search(
                 query=args.query or '',
                 page=args.page,
@@ -82,11 +87,12 @@ class SearchCommand(Command):
                 tags=tuple(args.tag),
                 order=args.sort):
 
-            tags = [tag.name for tag in result.tags]
+            if 'tags' in result:
+                tags = [tag.name for tag in result.tags]
+            else:
+                tags = []
 
-            # apparently game_versions can't be trusted so cheat a bit here
-            if game_ver not in result.game_versions and (
-                    game_ver != parse_game_version(result.latest_release)):
+            if game_ver != parse_game_version(result.latest_release):
                 if args.ignore_game_ver:
                     tags.insert(0, 'incompatible')
                 else:

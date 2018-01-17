@@ -125,8 +125,10 @@ def parse_requirement(text):
 
 
 def parse_game_version(info):
+    if 'info_json' in info:
+        info = info.info_json
     try:
-        version = '.'.join(info.info_json.factorio_version.split('.')[:2])
+        version = '.'.join(info.factorio_version.split('.')[:2])
         return Version(version)
     except AttributeError:
         return Version('0.12')

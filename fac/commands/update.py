@@ -34,36 +34,49 @@ class UpdateCommand(Command):
                 print('Warning: %s' % ex)
                 continue
 
+            found_update = False
+            local_ver = local_mod.version
+            latest_ver = local_ver
+            latest_release = None
+
             for release in remote_mod.releases:
                 if not args.ignore_game_ver and \
                         parse_game_version(release) != game_ver:
                     continue
 
                 release_ver = Version(release.version)
-                local_ver = local_mod.version
 
-                if release_ver > local_ver:
-                    print('Found update: %s %s' % (
-                        local_mod.name, release.version)
-                    )
+                if release_ver > latest_ver:
+                    found_update = True
+                    latest_ver = release_ver
+                    latest_release = release
+                    
 
-                    if not args.unpacked and not local_mod.packed:
-                        print(
-                            '%s is unpacked. '
-                            'Use -U to update it anyway.' % (
-                                local_mod.name
-                            )
+            update_mod = True
+            if found_update:
+                print('Found update: %s %s' % (
+                    local_mod.name, latest_ver)
+                )
+
+                if not args.unpacked and not local_mod.packed:
+                    print(
+                        '%s is unpacked. '
+                        'Use -U to update it anyway.' % (
+                            local_mod.name
                         )
-                        continue
+                    )
+                    update_mod = False
+                    
 
-                    if not args.held and local_mod.name in self.config.hold:
-                        print('%s is held. '
-                              'Use -H to update it anyway.' %
-                              local_mod.name)
-                        break
+                if not args.held and local_mod.name in self.config.hold:
+                    print('%s is held. '
+                          'Use -H to update it anyway.' %
+                          local_mod.name)
+                    update_mod = False
 
-                    updates.append((local_mod, release))
-                    break
+                if update_mod:
+                    updates.append((local_mod, latest_release))
+                
 
         if not updates:
             print('No updates were found')

@@ -23,7 +23,7 @@ Or directly from git:
 
 .. code::
 
-    $ pip3 install -e "git+https://github.com/mickael9/fac.git#egg=fac-cli"
+    $ pip3 install -e "git+https://github.com/Senth/fac.git#egg=fac-cli"
 
 Or from an existing clone:
 

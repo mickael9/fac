@@ -16,6 +16,7 @@ FACTORIO_SEARCH_PATHS = [
     '..',
     os.path.join('..', 'factorio'),
     user_data_dir('factorio', appauthor=False),
+    user_data_dir('Factorio', appauthor=False),
     os.path.join(
         user_data_dir('Steam', appauthor=False),
         os.path.join('SteamApps', 'common', 'Factorio'),
@@ -23,6 +24,10 @@ FACTORIO_SEARCH_PATHS = [
     os.path.join(
         user_data_dir('Steam', appauthor=False),
         os.path.join('steamapps', 'common', 'Factorio'),
+    ),
+    os.path.join(
+        user_data_dir('Steam', appauthor=False),
+        os.path.join('steamapps', 'common', 'Factorio', 'factorio.app', 'Contents'),
     ),
 ]
 

@@ -2,6 +2,7 @@ import argparse
 import logging
 
 from fac.api import API
+from fac.db import DB
 from fac.files import Config
 from fac.mods import ModManager
 
@@ -46,10 +47,11 @@ def main():
 
     api = API()
     config = Config()
-    manager = ModManager(api=api, config=config)
+    db = DB(config, api)
+    manager = ModManager(api=api, config=config, db=db)
 
     for command_class in CommandRegistry.commands:
-        command = command_class(api, config, manager)
+        command = command_class(manager)
         command.create_parser(command_subparsers, [common_parser])
 
     root_parser = argparse.ArgumentParser(
@@ -88,6 +90,7 @@ def main():
             pass
     else:
         root_parser.print_help()
+
 
 if __name__ == '__main__':
     main()

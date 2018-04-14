@@ -1,8 +1,7 @@
 import os.path
 
-from fac.mods import ZippedMod
 from fac.commands import Command, Arg
-from fac.api import ModNotFoundError
+from fac.errors import ModNotFoundError
 from fac.utils import parse_requirement, Requirement
 
 
@@ -42,22 +41,19 @@ class FetchCommand(Command):
     def run(self, args):
         for req in args.requirements:
             name, spec = parse_requirement(req)
-            name = self.manager.resolve_mod_name(name, remote=True)
-            req = Requirement(name, spec)
 
             try:
-                releases = self.manager.resolve_remote_requirement(
+                name = self.manager.resolve_mod_name(name, remote=True)
+                req = Requirement(name, spec)
+                release = next(self.manager.resolve_remote_requirement(
                     req, ignore_game_ver=True
-                )
+                ))
             except ModNotFoundError as ex:
                 print("Error: %s" % ex)
                 continue
-
-            if not releases:
+            except StopIteration:
                 print('No match found for %s' % (req,))
                 continue
-
-            release = releases[0]
 
             file_name = release.file_name
             self.manager.validate_mod_file_name(file_name)

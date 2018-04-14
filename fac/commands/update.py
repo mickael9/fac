@@ -1,6 +1,5 @@
 from fac.commands import Command, Arg
-from fac.api import ModNotFoundError
-from fac.utils import prompt, Version, parse_game_version
+from fac.utils import prompt, Version
 
 
 class UpdateCommand(Command):
@@ -24,46 +23,48 @@ class UpdateCommand(Command):
     def run(self, args):
         installed = self.manager.find_mods()
         updates = []
-        game_ver = self.config.game_version_major
+
+        if args.ignore_game_ver:
+            game_ver = None
+        else:
+            game_ver = self.config.game_version_major
+
+        self.db.update()
 
         for local_mod in installed:
             print('Checking: %s' % local_mod.name)
+
             try:
-                remote_mod = self.api.get_mod(local_mod.name)
-            except ModNotFoundError as ex:
-                print('Warning: %s' % ex)
+                release = next(self.manager.get_releases(local_mod.name,
+                                                         game_ver))
+            except StopIteration:
                 continue
 
-            for release in remote_mod.releases:
-                if not args.ignore_game_ver and \
-                        parse_game_version(release) != game_ver:
+            release_ver = Version(release.version)
+            local_ver = local_mod.version
+
+            if release_ver > local_ver:
+                print('Found update: %s %s' % (
+                    local_mod.name, release.version)
+                )
+
+                if not args.unpacked and not local_mod.packed:
+                    print(
+                        '%s is unpacked. '
+                        'Use -U to update it anyway.' % (
+                            local_mod.name
+                        )
+                    )
                     continue
 
-                release_ver = Version(release.version)
-                local_ver = local_mod.version
-
-                if release_ver > local_ver:
-                    print('Found update: %s %s' % (
-                        local_mod.name, release.version)
-                    )
-
-                    if not args.unpacked and not local_mod.packed:
-                        print(
-                            '%s is unpacked. '
-                            'Use -U to update it anyway.' % (
-                                local_mod.name
-                            )
-                        )
-                        continue
-
-                    if not args.held and local_mod.name in self.config.hold:
-                        print('%s is held. '
-                              'Use -H to update it anyway.' %
-                              local_mod.name)
-                        break
-
-                    updates.append((local_mod, release))
+                if not args.held and local_mod.name in self.config.hold:
+                    print('%s is held. '
+                          'Use -H to update it anyway.' %
+                          local_mod.name)
                     break
+
+                updates.append((local_mod, release))
+                break
 
         if not updates:
             print('No updates were found')

@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import os.path
 
 from configparser import ConfigParser
 
@@ -52,6 +53,9 @@ class Config(ConfigParser):
     [paths]
     data-path =
     write-path =
+
+    [db]
+    update_period = 600
     '''
 
     def __init__(self, config_file=None):
@@ -230,3 +234,13 @@ class JSONFile(JSONDict):
     def save(self):
         with open(self.file, 'w', encoding='utf-8') as f:
             json.dump(self.data, f, indent=4)
+
+    @property
+    def mtime(self):
+        try:
+            return os.path.getmtime(self.file)
+        except IOError:
+            return 0
+
+    def utime(self, *args, **kwargs):
+        os.utime(self.file, *args, **kwargs)

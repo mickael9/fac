@@ -1,5 +1,5 @@
 from fac.commands import Command, Arg
-from fac.api import ModNotFoundError
+from fac.errors import ModNotFoundError
 from fac.utils import parse_game_version
 
 
@@ -15,6 +15,8 @@ class ShowCommand(Command):
     ]
 
     epilog = """
+    FORMAT STRINGS
+
     An optional format string can be specified with the -F flag.
     You can use this if you want to customize the default output format.
 
@@ -32,6 +34,8 @@ class ShowCommand(Command):
         {mod.name}                   Name of the mod
         {mod.releases[0].version}    Version of first release
         {mod.releases[0].info_json}  info.json of first release
+
+    Note: as a shorthand, you can also use `0` instead of `mod`
     """
 
     def run(self, args):
@@ -42,11 +46,12 @@ class ShowCommand(Command):
             else:
                 print('-' * 80)
 
-            mod = self.manager.resolve_mod_name(mod, remote=True)
             try:
+                mod = self.manager.resolve_mod_name(mod, remote=True,
+                                                    patterns=False)
                 m = self.api.get_mod(mod)
             except ModNotFoundError as ex:
-                print('Error: %s' % ex)
+                print("Error: %s" % ex)
                 continue
 
             if args.format:

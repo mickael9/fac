@@ -4,9 +4,6 @@ import json
 import packaging.version
 from collections import UserDict, UserList, namedtuple
 
-__all__ = ['JSONList', 'JSONDict', 'prompt', 'parse_requirement',
-           'Requirement', 'Version']
-
 
 class JSONList(UserList):
     def __init__(self, data=None):
@@ -132,3 +129,80 @@ def parse_game_version(info):
         return Version(version)
     except AttributeError:
         return Version('0.12')
+
+
+def match_game_version(release, game_version):
+    if game_version is None:
+        return True
+
+    release_version = parse_game_version(release)
+    return release_version == game_version
+
+
+class ProgressWidget:
+    def __init__(self, text, file=sys.stderr):
+        self.text = text
+        self.done = False
+        self.file = file
+        self.progress = None
+        self.maxprint = 0
+
+        if not self.file.isatty():
+            self.print(text + '\n')
+            self.done = True
+        else:
+            self(0, 0)
+
+    def print(self, text):
+        self.maxprint = max(self.maxprint, len(text))
+        print('\r' + text.ljust(self.maxprint),
+              end='', flush=True, file=self.file)
+
+    def error(self, exc):
+        if not self.done:
+            self.print('%s error' % self.text)
+            self.done = True
+            print(file=self.file)
+
+    def finish(self):
+        if not self.done:
+            self.done = True
+            print(file=self.file)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type=None, exc_value=None, traceback=None):
+        if exc_value:
+            self.error(exc_value)
+        else:
+            self.finish()
+
+    def __call__(self, cur, tot):
+        if self.done:
+            return
+
+        if tot:
+            progress = int(100 * cur / tot)
+
+            if self.progress == progress:
+                return
+
+            self.progress = progress
+
+            self.print('%s %d %%' % (self.text, progress))
+
+            if cur == tot:
+                self.finish()
+        else:
+            self.print(self.text)
+
+
+def start_iter(it):
+    first = next(it)
+
+    def run():
+        yield first
+        yield from it
+
+    return run()

@@ -1,5 +1,7 @@
 '''Helper classes to access the Factorio Mod API'''
 
+import json
+
 from urllib.parse import quote
 from functools import lru_cache
 
@@ -7,14 +9,12 @@ import requests
 from requests.packages.urllib3.util import Retry
 from requests.adapters import HTTPAdapter
 
-from fac.utils import JSONDict
-
-__all__ = ['API', 'ModNotFoundError', 'AuthError', 'OwnershipError']
+from fac.utils import JSONDict, JSONList
+from fac.errors import ModNotFoundError, AuthError, OwnershipError
 
 BASE_URL = 'https://mods.factorio.com/api/'
 LOGIN_URL = 'https://auth.factorio.com/api-login'
 DEFAULT_PAGE_SIZE = 25
-DEFAULT_ORDER = 'top'
 
 
 class API:
@@ -27,50 +27,25 @@ class API:
         self.session.mount('https://', adapter)
         self.session.mount('http://', adapter)
 
-    def search(self,
-               query, tags=[],
-               order=None,
-               page_size=None,
-               page_count=None,
-               page=1,
-               limit=0):
+    def get_mods(self, progress=None, page_size='max'):
+        resp = self.get(self.url, params=dict(page_size=page_size),
+                        stream=True)
+        resp.raise_for_status()
+        content_length = int(resp.headers['content-length'])
+        data = bytearray()
 
-        order = order or DEFAULT_ORDER
-        page_size = page_size or DEFAULT_PAGE_SIZE
-        end_page = None
-        count = 0
+        for chunk in resp.iter_content(chunk_size=1024):
+            data.extend(chunk)
+            if progress:
+                progress(resp.raw.tell(), content_length)
 
-        if page_count:
-            end_page = page + page_count - 1
-
-        while True:
-            resp = self.session.get(self.url, params=dict(
-                q=query,
-                tags=','.join(tags),
-                order=order,
-                page_size=page_size,
-                page=page,
-            ))
-            resp.raise_for_status()
-            data = JSONDict(resp.json())
-            pages = data.pagination.page_count
-
-            for result in data.results:
-                count += 1
-                yield result
-                if limit and limit == count:
-                    return
-
-            page += 1
-            if page > pages or (end_page and page > end_page):
-                break
+        return JSONList(json.loads(data.decode('utf-8'))['results'])
 
     @lru_cache()
     def get_mod(self, mod_name):
         resp = self.session.get('%s/%s' % (self.url, quote(mod_name)))
         if resp.status_code == 404:
-            raise ModNotFoundError(
-                "'%s' is not on the mod portal" % mod_name)
+            raise ModNotFoundError(mod_name)
         else:
             resp.raise_for_status()
 
@@ -85,7 +60,7 @@ class API:
 
         try:
             json = resp.json()
-        except:
+        except Exception:
             json = None
 
         try:
@@ -102,15 +77,3 @@ class API:
 
     def get(self, *args, **kwargs):
         return self.session.get(*args, **kwargs)
-
-
-class AuthError(Exception):
-    pass
-
-
-class OwnershipError(AuthError):
-    pass
-
-
-class ModNotFoundError(Exception):
-    pass

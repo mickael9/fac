@@ -1,4 +1,5 @@
 from fac.commands import Command, Arg
+from fac.errors import ModNotFoundError
 
 
 class EnableDisableCommand(Command):
@@ -10,7 +11,12 @@ class EnableDisableCommand(Command):
         enabled = self.name == 'enable'
 
         for mod_pattern in args.mods:
-            mod_name = self.manager.resolve_mod_name(mod_pattern)
+            try:
+                mod_name = self.manager.resolve_mod_name(mod_pattern)
+            except ModNotFoundError as e:
+                print("Error: %s" % e)
+                continue
+
             mods = self.manager.find_mods(mod_name)
 
             if not mods:

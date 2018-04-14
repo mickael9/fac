@@ -35,7 +35,7 @@ setup(
 
     data_files=[('share/zsh/site-functions', ['zsh/_fac'])],
 
-    install_requires=['requests', 'appdirs', 'packaging'],
+    install_requires=['requests', 'appdirs', 'packaging', 'whoosh'],
 
     entry_points={
         'console_scripts': [

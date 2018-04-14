@@ -9,8 +9,10 @@ from pathlib import Path
 from glob import glob
 
 from fac.files import JSONFile
-from fac.utils import JSONDict, Version, parse_game_version
-from fac.api import AuthError, OwnershipError, ModNotFoundError
+from fac.utils import (JSONDict, ProgressWidget,
+                       Version, parse_game_version, match_game_version)
+
+from fac.errors import ModNotFoundError, AuthError, OwnershipError
 
 
 class Mod:
@@ -152,7 +154,7 @@ class ZippedMod(Mod):
                     dest = os.path.join(unpacked_location, dest)
                     self._extract_member(f, arcname, dest)
                 unpacked_mod = UnpackedMod(self.manager, unpacked_location)
-            except:
+            except Exception:
                 shutil.rmtree(unpacked_location)
                 raise
 
@@ -251,7 +253,7 @@ class UnpackedMod(Mod):
                         )
                 f.close()
                 packed_mod = ZippedMod(self.manager, packed_location)
-            except:
+            except Exception:
                 f.close()
                 os.remove(packed_location)
                 raise
@@ -269,9 +271,10 @@ class UnpackedMod(Mod):
 class ModManager:
     'Provides access to the factorio mods directory'
 
-    def __init__(self, config, api):
+    def __init__(self, config, api, db):
         self.api = api
         self.config = config
+        self.db = db
         self.mods_json = None
 
     def load(self):
@@ -304,63 +307,62 @@ class ModManager:
             mods.extend(mod_type.find(self, name, version))
         return mods
 
-    def resolve_mod_name(self, name, remote=False):
-        if '*' in name:
+    def resolve_mod_name(self, name, remote=False, patterns=True):
+        if patterns and '*' in name:
             # Keep patterns unmodified
             return name
 
-        # Find an exact local match
-        local_mods = self.find_mods()
-
-        for mod in local_mods:
-            if mod.name == name:
-                return name
+        # Find an exact match
+        mod_names = set(mod.name for mod in self.find_mods())
 
         if remote:
-            # Find an exact remote match
-            try:
-                mod = self.api.get_mod(name)
-                return mod.name
-            except ModNotFoundError:
-                pass
+            mod_names |= set(self.db.mods)
 
-        # Find a local match (case-insensitive)
-        for mod in local_mods:
-            if mod.name.lower() == name.lower():
-                return mod.name
+        if name in mod_names:
+            return name
 
-        # Find a local partial match (case-insensitive)
-        partial_matches = [mod for mod in local_mods
-                           if name.lower() in mod.name.lower()]
+        # Find a case-insensitive match
+        for mod_name in mod_names:
+            if mod_name.lower() == name.lower():
+                return mod_name
+
+        # Find a unique partial match (case-insensitive)
+        partial_matches = [mod_name
+                           for mod_name in mod_names
+                           if name.lower() in mod_name.lower()]
+
         if len(partial_matches) == 1:
-            return partial_matches[0].name
+            return partial_matches[0]
 
         if remote:
             # Find a remote match (case-insensitive)
-            remote_mods = list(self.api.search(name, page_size=5, limit=5))
-            for mod in remote_mods:
-                if mod.name.lower() == name.lower():
-                    return mod.name
+            remote_mods = list(self.db.search(name, limit=5))
 
             # If there was only one result, we can assume it's the one
             if len(remote_mods) == 1:
                 return remote_mods[0].name
+            elif len(remote_mods) > 1:
+                print("'%s' not found, try one of the following:" % name)
+                for match in remote_mods:
+                    print(' - ' + match.name)
+                print()
+
+        raise ModNotFoundError(name)
 
         # If nothing was found, return original mod name and let things fail
         return name
 
     def resolve_remote_requirement(self, req, ignore_game_ver=False):
         spec = req.specifier
-        game_ver = self.config.game_version_major
+        game_ver = None if ignore_game_ver else self.config.game_version_major
 
-        mod = self.api.get_mod(req.name)
+        releases = self.get_releases(req.name, game_ver)
 
-        res = [release for release in mod.releases
-               if release.version in spec and
-               (ignore_game_ver or
-                parse_game_version(release) == game_ver)]
-        res.sort(key=lambda r: Version(r.version), reverse=True)
-        return res
+        yield from (
+            release
+            for release in releases
+            if release.version in spec
+        )
 
     def resolve_local_requirement(self, req, ignore_game_ver=False):
         spec = req.specifier
@@ -371,6 +373,25 @@ class ModManager:
                (ignore_game_ver or mod.game_version == game_ver)]
         res.sort(key=lambda m: m.version, reverse=True)
         return res
+
+    def get_releases(self, mod_name, game_version):
+        try:
+            mod = getattr(self.db.mods, mod_name)
+        except AttributeError:
+            raise ModNotFoundError(mod_name)
+
+        if match_game_version(mod.latest_release, game_version):
+            latest = mod.latest_release
+            yield latest
+
+        mod = self.api.get_mod(mod_name)
+        res = [release
+               for release in mod.releases
+               if match_game_version(release, game_version)
+               and release.version != latest.version]
+
+        res.sort(key=lambda r: Version(r.version), reverse=True)
+        yield from res
 
     def is_mod_enabled(self, name):
         mod = self.get_mod_json(name)
@@ -390,7 +411,8 @@ class ModManager:
 
         if enabled != self.is_mod_enabled(name):
             if self.config.game_version < Version('0.15'):
-                # Factorio < 0.15 uses "true"/"false" strings instead of booleans
+                # Factorio < 0.15 uses "true"/"false" strings
+                # instead of booleans
                 mod.enabled = 'true' if enabled else 'false'
             else:
                 mod.enabled = enabled
@@ -506,29 +528,33 @@ class ModManager:
     def download_mod(self, release, file_path):
         player_data = self.require_login()
         url = urljoin(self.api.base_url, release.download_url)
+        basename = release.file_name
 
-        while True:
-            print('Downloading: %s...' % url)
+        with ProgressWidget('Downloading: %s...' % basename) as progress:
+            while True:
+                req = self.api.get(
+                    url,
+                    params={
+                        'username': player_data['service-username'],
+                        'token': player_data['service-token']
+                    },
+                    stream=True,
+                )
 
-            req = self.api.get(
-                url,
-                params={
-                    'username': player_data['service-username'],
-                    'token': player_data['service-token']
-                }
-            )
+                if req.status_code == 403:
+                    progress.error()
+                    print('Authentication error when downloading mod. '
+                          'Please login again.')
+                    player_data = self.require_login(reset=True)
+                    continue
+                break
 
-            if req.status_code == 403:
-                print('Authentication error when downloading mod. '
-                      'Please login again.')
-                player_data = self.require_login(reset=True)
-                continue
-            break
+            req.raise_for_status()
+            length = int(req.headers['content-length'])
 
-        req.raise_for_status()
-        data = req.content
-
-        with open(file_path, 'wb') as f:
-            f.write(data)
+            with open(file_path, 'wb') as f:
+                for chunk in req.iter_content(chunk_size=1024):
+                    f.write(chunk)
+                    progress(f.tell(), length)
 
         return ZippedMod(self, file_path)

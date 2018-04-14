@@ -3,9 +3,9 @@ import sys
 from textwrap import fill
 from shutil import get_terminal_size
 
-from fac.utils import parse_game_version
+from fac.utils import match_game_version
 from fac.commands import Command, Arg
-from fac.api import DEFAULT_PAGE_SIZE
+
 
 class SearchCommand(Command):
     'Search the mods database.'
@@ -13,44 +13,72 @@ class SearchCommand(Command):
     name = 'search'
 
     arguments = [
-        Arg('query', help='search string', nargs='?'),
-
-        Arg('-t', help='filter by tag', nargs='*', dest='tag', default=[]),
+        Arg('query', help='search string', default=(), nargs='*'),
 
         Arg('-d', help='sort results by most downloaded',
             action='store_const',
             dest='sort',
-            const='top',
-            default='top'),
+            const='-downloads'),
 
         Arg('-a', help='sort results alphabetically',
             action='store_const',
             dest='sort',
-            const='alpha'),
+            const='title'),
 
         Arg('-u', help='sort results by most recently updated',
             action='store_const',
             dest='sort',
-            const='updated'),
+            const='-updated'),
+
+        Arg('--sort',
+            help="comma-separated list of sort fields. "
+                 "Prefix a field with - to reverse it",
+            dest='sort'),
 
         Arg('-l', '--limit', type=int,
             help='stop after returning that many results'),
 
-        Arg('-p', '--page', type=int, default=1,
-            help='starting page number for the API calls'),
-
-        Arg('-s', '--page-size', type=str,  # allow 'max' to be used
-            default=DEFAULT_PAGE_SIZE,
-            help='maximum number of returned results per page'),
-
-        Arg('-c', '--page-count', type=int,
-            help='maximum number of pages to fetch'),
-
         Arg('-F', '--format',
             help='show results using the specified format string.'),
+
+        Arg('-S', '--sync', help="Force database sync",
+            action='store_true',
+            default=None,
+            dest='sync'),
+
+        Arg('--no-sync', help="Don't sync database even if it's out of date",
+            action='store_false',
+            default=None,
+            dest='sync'),
     ]
 
     epilog = """
+    SEARCHING
+
+    Search query strings use the whoosh library.
+
+    Full syntax is described here:
+    https://whoosh.readthedocs.io/en/latest/querylang.html
+
+    You can search by a specific field, eg `summary:blueprint` matches all mods
+    having the word blueprint in their summary.
+
+    Wildcards can also be used, eg `name:bob*` will match all mods having any
+    word starting with bob in their name.
+
+    If you don't specify a field, the search will be done on all default fields
+    at the same time: owner, name, title and summary
+
+    The valid fields are:
+        name: mod name
+        owner: mod owner
+        title: mod title
+        summary: mod summary (not sortable)
+        downloads: download count
+
+
+    FORMAT STRINGS
+
     An optional format string can be specified with the -F flag.
     You can use this if you want to customize the default output format.
 
@@ -67,35 +95,34 @@ class SearchCommand(Command):
         {result.name}                   Name of the mod
         {result}                        JSON-repesentation of the result object
         {result.latest_release.version} Latest release version
+
+    Note: as a shorthand, you can also use `0` instead of `result`
     """
 
     def run(self, args):
+        sort = args.sort
+
+        if args.sync is None:
+            self.db.maybe_update()
+        elif args.sync:
+            self.db.update()
+
+        # null queries just list all mods in alphabetical order by default
+        if not args.query and not sort:
+            sort = 'name'
+
         hidden = 0
-        count = 0
-        game_ver = self.config.game_version_major
 
-        print("Note: search functionality is currently broken due to the "
-              "switch to the new mod portal and all mods will always be shown "
-              "regardless of the search criteria. This shall be adressed in a "
-              "future release.")
+        for result in self.db.search(
+                query=' '.join(args.query),
+                sortedby=sort,
+                limit=args.limit):
 
-        for result in self.api.search(
-                query=args.query or '',
-                page=args.page,
-                page_size=args.page_size,
-                page_count=args.page_count,
-                tags=tuple(args.tag),
-                order=args.sort):
-
-            if 'tags' in result:
-                tags = [tag.name for tag in result.tags]
-            else:
-                tags = []
-
-            if game_ver != parse_game_version(result.latest_release):
-                if args.ignore_game_ver:
-                    tags.insert(0, 'incompatible')
-                else:
+            tags = []
+            if not match_game_version(result.latest_release,
+                                      self.config.game_version_major):
+                tags.insert(0, 'incompatible')
+                if not args.ignore_game_ver:
                     hidden += 1
                     continue
 
@@ -120,11 +147,6 @@ class SearchCommand(Command):
                     for line in result.summary.splitlines()
                 ))
                 print()
-
-            count += 1
-            if args.limit and count >= args.limit:
-                break
-
         if hidden:
             print('Note: %d mods were hidden because they have no '
                   'compatible game versions. Use -i to show them.' % hidden,

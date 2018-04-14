@@ -1,6 +1,6 @@
 from fac.commands import Command, Arg
-from fac.api import ModNotFoundError
-from fac.utils import parse_requirement, Requirement, Version
+from fac.errors import ModNotFoundError
+from fac.utils import parse_requirement, start_iter, Requirement, Version
 
 
 class InstallCommand(Command):
@@ -37,9 +37,6 @@ class InstallCommand(Command):
         Arg('-U', '--unpack', action='store_true', default=None,
             help='unpack mods zip files'),
 
-        # Arg('-o', '--install-optdeps', action='store_true',
-        #    help='install all optional dependencies'),
-
         Arg('-d', '--no-deps', action='store_true',
             help='do not install any dependencies'),
     ]
@@ -50,13 +47,15 @@ class InstallCommand(Command):
 
         for req in args.requirements:
             name, spec = parse_requirement(req)
-            name = self.manager.resolve_mod_name(name, remote=True)
-            req = Requirement(name, spec)
 
             try:
-                releases = self.manager.resolve_remote_requirement(
+                name = self.manager.resolve_mod_name(name, remote=True)
+                req = Requirement(name, spec)
+                releases = start_iter(self.manager.resolve_remote_requirement(
                     req, ignore_game_ver=args.ignore_game_ver
-                )
+                ))
+            except StopIteration:
+                releases = []
             except ModNotFoundError as ex:
                 print("Error: %s" % ex)
                 continue
@@ -64,10 +63,6 @@ class InstallCommand(Command):
             if not args.held and req.name in self.config.hold:
                 print('%s is held. '
                       'Use -H to install it anyway.' % (req.name))
-                continue
-
-            if not releases:
-                print('No match found for %s' % (req,))
                 continue
 
             local_mod = self.manager.get_mod(req.name)
@@ -91,6 +86,9 @@ class InstallCommand(Command):
                             )
                         )
                         break
+
+                # FIXME: deps are currently ignored because the API doesn't
+                # expose them anymore
 
                 deps = []
 
@@ -124,9 +122,11 @@ class InstallCommand(Command):
                             ignore_game_ver=args.ignore_game_ver):
                         continue
                     try:
-                        rels = self.manager.resolve_remote_requirement(
-                            depreq,
-                            ignore_game_ver=args.ignore_game_ver
+                        rels = start_iter(
+                            self.manager.resolve_remote_requirement(
+                                depreq,
+                                ignore_game_ver=args.ignore_game_ver
+                            )
                         )
                     except ModNotFoundError:
                         print('Dependency not found: %s' % depreq.name)
@@ -149,6 +149,9 @@ class InstallCommand(Command):
                     to_install += deps_to_install
                     to_install.append((name, release))
                     break
+            else:
+                print('No match found for %s' % (req,))
+                continue
 
         for name, release in to_install:
             print('Installing: %s %s...' % (

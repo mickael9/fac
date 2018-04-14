@@ -61,7 +61,7 @@ def _unwrap(obj):
     return obj
 
 
-def prompt(prompt='Continue?', choices='Y/n'):
+def prompt(prompt="Continue?", choices="Y/n"):
     default_choice = None
     for choice in choices:
         if choice.isupper():
@@ -70,7 +70,7 @@ def prompt(prompt='Continue?', choices='Y/n'):
 
     while True:
         print(
-            '%s [%s]' % (prompt, choices),
+            "%s [%s]" % (prompt, choices),
             end=' ', flush=True
         )
 
@@ -81,7 +81,7 @@ def prompt(prompt='Continue?', choices='Y/n'):
         elif reply in choices.lower() and reply != '/':
             return reply
         else:
-            print('Please answer with one of %s.' % choices)
+            print("Please answer with one of %s." % choices)
 
 
 REQUIREMENT_RE = re.compile(
@@ -115,7 +115,7 @@ def parse_requirement(text):
     from packaging.specifiers import SpecifierSet
     match = REQUIREMENT_RE.match(text)
     if not match:
-        raise ValueError('Invalid requirement: %s' % text)
+        raise ValueError("Invalid requirement: %s" % text)
     name = match.group('name').strip()
     spec = SpecifierSet(match.group('specifier') or '')
     return Requirement(name, spec)
@@ -148,19 +148,19 @@ class ProgressWidget:
         self.maxprint = 0
 
         if not self.file.isatty():
-            self.print(text + '\n')
+            self.print(text + "\n")
             self.done = True
         else:
             self(0, 0)
 
     def print(self, text):
         self.maxprint = max(self.maxprint, len(text))
-        print('\r' + text.ljust(self.maxprint),
+        print("\r" + text.ljust(self.maxprint),
               end='', flush=True, file=self.file)
 
     def error(self, exc):
         if not self.done:
-            self.print('%s error' % self.text)
+            self.print("%s error" % self.text)
             self.done = True
             print(file=self.file)
 
@@ -190,7 +190,7 @@ class ProgressWidget:
 
             self.progress = progress
 
-            self.print('%s %d %%' % (self.text, progress))
+            self.print("%s %d %%" % (self.text, progress))
 
             if cur == tot:
                 self.finish()

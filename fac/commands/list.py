@@ -2,7 +2,7 @@ from fac.commands import Command, Arg
 
 
 class ListCommand(Command):
-    'List installed mods and their status.'
+    """List installed mods and their status."""
 
     _all_tags = ['disabled', 'unpacked', 'held', 'incompatible']
 
@@ -11,14 +11,14 @@ class ListCommand(Command):
     arguments = [
         Arg('-E', '--exclude', metavar='TAG', nargs='+', action='append',
             default=[], choices=_all_tags,
-            help='exclude mods having any of the specified tags'),
+            help="exclude mods having any of the specified tags"),
 
         Arg('-I', '--include', metavar='TAG', nargs='+', action='append',
             default=[], choices=_all_tags,
-            help='only include mods having the specified tags'),
+            help="only include mods having the specified tags"),
 
         Arg('-F', '--format',
-            help='show installed mods using the specified format string.'),
+            help="show installed mods using the specified format string."),
     ]
     epilog = """
     Available tags: %s
@@ -47,19 +47,19 @@ class ListCommand(Command):
         {mod.location}      Mod file/directory path
         {mod.info}          info.json content as JSON
         {mod.info.dependencies}
-    """ % (', '.join(_all_tags))
+    """ % (", ".join(_all_tags))
 
     def run(self, args):
         mods = self.manager.find_mods()
         if not mods:
-            print('No installed mods.')
+            print("No installed mods.")
             return
 
         if not args.format:
             if not args.include and not args.exclude:
-                print('Installed mods:')
+                print("Installed mods:")
             else:
-                print('Matching mods:')
+                print("Matching mods:")
 
         found = False
         for mod in sorted(mods, key=lambda m: (not m.enabled, m.name)):
@@ -77,7 +77,7 @@ class ListCommand(Command):
                any(tag not in tags for l in args.include for tag in l):
                 continue
 
-            tags = ', '.join(tags)
+            tags = ", ".join(tags)
             found = True
 
             if args.format:
@@ -86,9 +86,9 @@ class ListCommand(Command):
                 ))
             else:
                 if tags:
-                    tags = ' (%s)' % tags
-                print('    %s %s%s' % (
+                    tags = " (%s)" % tags
+                print("    %s %s%s" % (
                     mod.name, mod.version, tags
                 ))
         if not found and not args.format:
-            print('No matches found.')
+            print("No matches found.")

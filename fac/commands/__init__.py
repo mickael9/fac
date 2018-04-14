@@ -18,8 +18,8 @@ class CommandRegistry(type):
 class Command(metaclass=CommandRegistry):
     arguments = ()
     usage = None
-    help = ''
-    epilog = ''
+    help = ""
+    epilog = ""
 
     def __init__(self, manager):
         self.manager = manager
@@ -28,19 +28,19 @@ class Command(metaclass=CommandRegistry):
         self.db = manager.db
 
     def create_parser(self, subparser, parents):
-        doc = self.__doc__ or ''
-        description = textwrap.dedent(doc.strip('\n') or self.help)
-        epilog = textwrap.dedent(self.epilog.strip('\n'))
+        doc = self.__doc__ or ""
+        description = textwrap.dedent(doc.strip("\n") or self.help)
+        epilog = textwrap.dedent(self.epilog.strip("\n"))
         help = self.help or (description and description.splitlines()[0])
 
         command_parser = argparse.ArgumentParser(add_help=False)
-        group = command_parser.add_argument_group('%s options' % self.name)
+        group = command_parser.add_argument_group("%s options" % self.name)
         for args, kwargs in self.arguments:
             group.add_argument(*args, **kwargs)
 
         subcommands_parser = argparse.ArgumentParser(
             add_help=False,
-            usage='%(prog)s ' + self.name
+            usage="%(prog)s " + self.name
         )
 
         if self.subcommands:

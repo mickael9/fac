@@ -1,4 +1,4 @@
-'''Helper classes to access the Factorio Mod API'''
+"""Helper classes to access the Factorio Mod API"""
 
 import json
 
@@ -68,7 +68,7 @@ class API:
             return json[0]
         except requests.HTTPError:
             if isinstance(json, dict) and 'message' in json:
-                if json['message'] == 'Insufficient membership':
+                if json['message'] == "Insufficient membership":
                     raise OwnershipError(json['message'])
                 else:
                     raise AuthError(json['message'])

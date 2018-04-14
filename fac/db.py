@@ -29,7 +29,7 @@ class SortColumn(FieldType):
 
 
 def intraword(text, **kwargs):
-    '''Standard analyzer that additionaly breaks camelCased words'''
+    """Standard analyzer that additionaly breaks camelCased words"""
 
     yield from normal_analyzer(text, **kwargs)
     yield from intra_analyzer(text, **kwargs)

@@ -2,7 +2,7 @@ from fac.commands import Command, Arg
 
 
 class MakeCompatibleCommand(Command):
-    '''
+    """
     Change the supported factorio version of mods.
 
     This modifies the `factorio_version` field in the mods' info.json file
@@ -10,11 +10,11 @@ class MakeCompatibleCommand(Command):
 
     Packed mods will be unpacked first.
     Unpacked mods will be modified in place.
-    '''
+    """
 
     name = 'make-compatible'
     arguments = [
-        Arg('mods', nargs='+', help='mods patterns to affect'),
+        Arg('mods', nargs='+', help="mods patterns to affect"),
     ]
 
     def run(self, args):
@@ -28,11 +28,11 @@ class MakeCompatibleCommand(Command):
             ]
 
             if not mods:
-                print('No match for %s.' % mod_pattern)
+                print("No match for %s." % mod_pattern)
                 continue
 
             for mod in mods:
-                print('Game version changed to %s for %s %s.' % (
+                print("Game version changed to %s for %s %s." % (
                     game_ver, mod.name, mod.version))
 
                 mod.info.factorio_version = game_ver

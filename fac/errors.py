@@ -12,4 +12,4 @@ class OwnershipError(AuthError):
 
 class ModNotFoundError(BaseError):
     def __init__(self, mod):
-        super().__init__('Mod not found: %s' % mod)
+        super().__init__("Mod not found: %s" % mod)

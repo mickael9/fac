@@ -65,7 +65,7 @@ class Mod:
                 mod = cls(manager, path)
 
             except Exception as ex:
-                print('Warning: invalid mod %s: %s' % (path, ex))
+                print("Warning: invalid mod %s: %s" % (path, ex))
                 continue
 
             if not fnmatchcase(mod.name, name):
@@ -102,7 +102,7 @@ class ZippedMod(Mod):
         self._read_info()
 
     def remove(self):
-        print('Removing file: %s' % self.location)
+        print("Removing file: %s" % self.location)
         os.remove(self.location)
 
     def _read_info(self):
@@ -111,7 +111,7 @@ class ZippedMod(Mod):
             self.toplevel = first_entry.split('/')[0]
 
             if not self.toplevel:
-                raise Exception('Could not find a top-level directory')
+                raise Exception("Could not find a top-level directory")
 
             info = json.loads(
                 f.read(
@@ -134,7 +134,7 @@ class ZippedMod(Mod):
         if os.path.isdir(unpacked_location) and not replace:
             return UnpackedMod(self.manager, unpacked_location)
 
-        print('Unpacking: %s' % self.location)
+        print("Unpacking: %s" % self.location)
 
         with ZipFile(self.location) as f:
             if replace and os.path.isdir(unpacked_location):
@@ -192,12 +192,12 @@ class ZippedMod(Mod):
             return
 
         with zipfile.open(arcname) as source, \
-                open(dest, "wb") as target:
+                open(dest, 'wb') as target:
             shutil.copyfileobj(source, target)
 
     @classmethod
     def find(cls, *args, **kwargs):
-        return cls._find("*.zip", *args, **kwargs)
+        return cls._find('*.zip', *args, **kwargs)
 
 
 class UnpackedMod(Mod):
@@ -219,7 +219,7 @@ class UnpackedMod(Mod):
         self._read_info()
 
     def remove(self):
-        print('Removing directory: %s' % self.location)
+        print("Removing directory: %s" % self.location)
         shutil.rmtree(self.location)
 
     def _read_info(self):
@@ -238,9 +238,9 @@ class UnpackedMod(Mod):
         if not replace and os.path.exists(packed_location):
             return ZippedMod(self.manager, packed_location)
 
-        print('Packing: %s' % self.location)
+        print("Packing: %s" % self.location)
 
-        with ZipFile(packed_location, "w") as f:
+        with ZipFile(packed_location, 'w') as f:
             try:
                 for root, dirs, files in os.walk(self.location):
                     zip_root = Path(root).relative_to(
@@ -269,7 +269,7 @@ class UnpackedMod(Mod):
 
 
 class ModManager:
-    'Provides access to the factorio mods directory'
+    """Provides access to the factorio mods directory"""
 
     def __init__(self, config, api, db):
         self.api = api
@@ -344,7 +344,7 @@ class ModManager:
             elif len(remote_mods) > 1:
                 print("'%s' not found, try one of the following:" % name)
                 for match in remote_mods:
-                    print(' - ' + match.name)
+                    print(" - " + match.name)
                 print()
 
         raise ModNotFoundError(name)
@@ -444,18 +444,18 @@ class ModManager:
         token = player_data.get('service-token')
 
         if reset or not (username and token):
-            print('You need a Factorio account to download mods.')
-            print('Please provide your username and password to authenticate '
-                  'yourself.')
-            print('Your username and token (NOT your password) will be stored '
-                  'so that you only have to enter it once')
-            print('This uses the exact same method used by Factorio itself')
+            print("You need a Factorio account to download mods.")
+            print("Please provide your username and password to authenticate "
+                  "yourself.")
+            print("Your username and token (NOT your password) will be stored "
+                  "so that you only have to enter it once")
+            print("This uses the exact same method used by Factorio itself")
             print()
             while True:
                 if username:
-                    print('Username [%s]:' % username, end=' ', flush=True)
+                    print("Username [%s]:" % username, end=" ", flush=True)
                 else:
-                    print('Username:', end=' ', flush=True)
+                    print("Username:", end=" ", flush=True)
 
                 input_username = sys.stdin.readline().strip()
 
@@ -464,7 +464,7 @@ class ModManager:
                 elif not username:
                     continue
 
-                password = getpass.getpass('Password (not shown):')
+                password = getpass.getpass("Password (not shown):")
                 if not password:
                     continue
 
@@ -477,11 +477,11 @@ class ModManager:
                     print("Please buy the game or link your Steam account if "
                           "you have bought the game from Steam.")
                 except AuthError as ex:
-                    print('Authentication error: %s.' % ex)
+                    print("Authentication error: %s." % ex)
                 except Exception as ex:
-                    print('Error: %s.' % ex)
+                    print("Error: %s." % ex)
                 else:
-                    print('Logged in successfully.')
+                    print("Logged in successfully.")
                     break
                 print()
             player_data['service-token'] = token
@@ -530,7 +530,7 @@ class ModManager:
         url = urljoin(self.api.base_url, release.download_url)
         basename = release.file_name
 
-        with ProgressWidget('Downloading: %s...' % basename) as progress:
+        with ProgressWidget("Downloading: %s..." % basename) as progress:
             while True:
                 req = self.api.get(
                     url,
@@ -543,8 +543,8 @@ class ModManager:
 
                 if req.status_code == 403:
                     progress.error()
-                    print('Authentication error when downloading mod. '
-                          'Please login again.')
+                    print("Authentication error when downloading mod. "
+                          "Please login again.")
                     player_data = self.require_login(reset=True)
                     continue
                 break

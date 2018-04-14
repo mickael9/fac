@@ -6,7 +6,7 @@ from fac.utils import parse_requirement, Requirement
 
 
 class FetchCommand(Command):
-    '''
+    """
     Fetch a mod from the mod portal.
 
     This will fetch the mods matching the given requirements using this format:
@@ -17,25 +17,25 @@ class FetchCommand(Command):
         ...
 
     If the version is not specified, the latest version will be selected.
-    '''
+    """
     name = 'fetch'
 
     arguments = [
         Arg('requirements', nargs='+',
-            help='requirement to fetch '
+            help="requirement to fetch "
                  '("name", "name>=1.0", "name==1.2", ...)'),
 
         Arg('-U', '--unpack', action='store_true', default=None,
-            help='unpack mods zip files after downloading'),
+            help="unpack mods zip files after downloading"),
 
         Arg('-K', '--keep', action='store_true',
-            help='keep mod zip file after unpacking'),
+            help="keep mod zip file after unpacking"),
 
         Arg('--dest', '-d', default='.',
-            help='destination directory (default: current directory)'),
+            help="destination directory (default: current directory)"),
 
         Arg('-R', '--replace', action='store_true',
-            help='replace existing file/directory'),
+            help="replace existing file/directory"),
     ]
 
     def run(self, args):
@@ -52,7 +52,7 @@ class FetchCommand(Command):
                 print("Error: %s" % ex)
                 continue
             except StopIteration:
-                print('No match found for %s' % (req,))
+                print("No match found for %s" % (req,))
                 continue
 
             file_name = release.file_name
@@ -61,15 +61,15 @@ class FetchCommand(Command):
 
             if os.path.exists(file_path) and not args.replace:
                 print(
-                    'File %s already exists. '
-                    'Use -R to replace it.' % file_path
+                    "File %s already exists. "
+                    "Use -R to replace it." % file_path
                 )
                 continue
 
             if not os.path.isdir(args.dest):
                 os.makedirs(args.dest)
 
-            print('Saving to: %s' % file_path)
+            print("Saving to: %s" % file_path)
             mod = self.manager.download_mod(release, file_path)
 
             if args.unpack:

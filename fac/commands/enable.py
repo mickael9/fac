@@ -4,7 +4,7 @@ from fac.errors import ModNotFoundError
 
 class EnableDisableCommand(Command):
     arguments = [
-        Arg('mods', nargs='+', help='mods patterns to affect'),
+        Arg('mods', nargs='+', help="mods patterns to affect"),
     ]
 
     def run(self, args):
@@ -20,23 +20,23 @@ class EnableDisableCommand(Command):
             mods = self.manager.find_mods(mod_name)
 
             if not mods:
-                print('No match found for %s' % mod_pattern)
+                print("No match found for %s" % mod_pattern)
                 continue
 
             for mod in mods:
                 if not self.manager.set_mod_enabled(mod.name, enabled):
-                    print('%s was already %sd' % (mod.name, self.name))
+                    print("%s was already %sd" % (mod.name, self.name))
                 else:
-                    print('%s is now %sd' % (mod.name, self.name))
+                    print("%s is now %sd" % (mod.name, self.name))
 
 
 class EnableCommand(EnableDisableCommand):
-    'Enable mods.'
+    """Enable mods."""
 
     name = 'enable'
 
 
 class DisableCommand(EnableDisableCommand):
-    'Disable mods.'
+    """Disable mods."""
 
     name = 'disable'

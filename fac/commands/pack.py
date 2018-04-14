@@ -3,11 +3,11 @@ from fac.commands import Command, Arg
 
 class PackUnpackCommand(Command):
     arguments = [
-        Arg('mods', nargs='+', help='mods patterns to affect'),
+        Arg('mods', nargs='+', help="mods patterns to affect"),
         Arg('-R', '--replace', action='store_true',
-            help='replace existing file/directory when packing/unpacking'),
+            help="replace existing file/directory when packing/unpacking"),
         Arg('-K', '--keep', action='store_true',
-            help='keep existing directory/file after packing/unpacking'),
+            help="keep existing directory/file after packing/unpacking"),
     ]
 
     def run(self, args):
@@ -18,7 +18,7 @@ class PackUnpackCommand(Command):
             mods = self.manager.find_mods(mod_pattern, packed=not pack)
 
             if not mods:
-                print('No %sable found for %s.' % (self.name,
+                print("No %sable found for %s." % (self.name,
                                                    mod_pattern))
                 continue
 
@@ -27,7 +27,7 @@ class PackUnpackCommand(Command):
                                                packed=pack)
 
                 if dup_mod and not args.replace:
-                    print('%s is already %sed. Use -R to replace it.' % (
+                    print("%s is already %sed. Use -R to replace it." % (
                         mod.name, self.name
                     ))
                     continue
@@ -37,16 +37,16 @@ class PackUnpackCommand(Command):
                 else:
                     mod.unpack(replace=args.replace, keep=args.keep)
 
-                print('%s is now %sed' % (mod.name, self.name))
+                print("%s is now %sed" % (mod.name, self.name))
 
 
 class PackCommand(PackUnpackCommand):
-    'Pack mods.'
+    """Pack mods."""
 
     name = 'pack'
 
 
 class UnpackCommand(PackUnpackCommand):
-    'Unpack mods.'
+    """Unpack mods."""
 
     name = 'unpack'

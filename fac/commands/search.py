@@ -8,24 +8,24 @@ from fac.commands import Command, Arg
 
 
 class SearchCommand(Command):
-    'Search the mods database.'
+    """Search the mods database."""
 
     name = 'search'
 
     arguments = [
-        Arg('query', help='search string', default=(), nargs='*'),
+        Arg('query', help="search string", default=(), nargs='*'),
 
-        Arg('-d', help='sort results by most downloaded',
+        Arg('-d', help="sort results by most downloaded",
             action='store_const',
             dest='sort',
             const='-downloads'),
 
-        Arg('-a', help='sort results alphabetically',
+        Arg('-a', help="sort results alphabetically",
             action='store_const',
             dest='sort',
             const='title'),
 
-        Arg('-u', help='sort results by most recently updated',
+        Arg('-u', help="sort results by most recently updated",
             action='store_const',
             dest='sort',
             const='-updated'),
@@ -36,10 +36,10 @@ class SearchCommand(Command):
             dest='sort'),
 
         Arg('-l', '--limit', type=int,
-            help='stop after returning that many results'),
+            help="stop after returning that many results"),
 
         Arg('-F', '--format',
-            help='show results using the specified format string.'),
+            help="show results using the specified format string."),
 
         Arg('-S', '--sync', help="Force database sync",
             action='store_true',
@@ -130,24 +130,24 @@ class SearchCommand(Command):
                 print(args.format.format(result, result=result))
             else:
                 print(result.title)
-                print('    Name: %s' % result.name)
+                print("    Name: %s" % result.name)
 
                 if tags:
-                    print('    Tags: %s' % (', '.join(tags)))
+                    print("    Tags: %s" % (", ".join(tags)))
 
                 print()
-                print('\n'.join(
+                print("\n".join(
                     fill(
                         line,
                         width=get_terminal_size()[0] - 4,
                         tabsize=4,
-                        subsequent_indent='    ',
-                        initial_indent='    ',
+                        subsequent_indent="    ",
+                        initial_indent="    ",
                     )
                     for line in result.summary.splitlines()
                 ))
                 print()
         if hidden:
-            print('Note: %d mods were hidden because they have no '
-                  'compatible game versions. Use -i to show them.' % hidden,
+            print("Note: %d mods were hidden because they have no "
+                  "compatible game versions. Use -i to show them." % hidden,
                   file=sys.stderr)

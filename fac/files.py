@@ -118,9 +118,9 @@ class Config(ConfigParser):
             return path
         elif path:
             raise Exception(
-                'The supplied data path (%s) does not seem to be correct.\n'
-                'Please check the data-path variable in %s and make sure it '
-                'points to a data directory containing a base/info.json file.'
+                "The supplied data path (%s) does not seem to be correct.\n"
+                "Please check the data-path variable in %s and make sure it "
+                "points to a data directory containing a base/info.json file."
                 % (path, self.config_file)
             )
         else:
@@ -134,8 +134,8 @@ class Config(ConfigParser):
                     return path
 
         raise Exception(
-            'Can not find the factorio data path.\n'
-            'Please set the data-path variable in %s' % (
+            "Can not find the factorio data path.\n"
+            "Please set the data-path variable in %s" % (
                 self.config_file
             )
         )
@@ -148,8 +148,8 @@ class Config(ConfigParser):
             return path
         elif path:
             raise Exception(
-                'The supplied write path (%s) does not seem to be correct.\n'
-                'Please check the write-path variable in %s and make sure it '
+                "The supplied write path (%s) does not seem to be correct.\n"
+                "Please check the write-path variable in %s and make sure it "
                 "points to a directory containing writeable 'config' and "
                 "'mods' subdirectories." % (
                     path,
@@ -164,8 +164,8 @@ class Config(ConfigParser):
                     return path
 
         raise Exception(
-            'Can not find a valid factorio write path.\n'
-            'Please set one using the write-path variable in %s' % (
+            "Can not find a valid factorio write path.\n"
+            "Please set one using the write-path variable in %s" % (
                 self.config_file
             )
         )

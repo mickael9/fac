@@ -8,12 +8,12 @@ setup(
 
     version=__import__('fac').__version__,
 
-    description='Command-line mod manager for Factorio (install, update...).',
+    description="Command-line mod manager for Factorio (install, update...).",
     long_description=long_description,
 
     url='https://github.com/mickael9/fac',
 
-    author='Mickaël Thomas',
+    author="Mickaël Thomas",
     author_email='mickael9@gmail.com',
 
     license='MIT',

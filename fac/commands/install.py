@@ -4,7 +4,7 @@ from fac.utils import parse_requirement, start_iter, Requirement, Version
 
 
 class InstallCommand(Command):
-    '''
+    """
     Install (or update) mods.
 
     This will install mods matching the given requirements using this format:
@@ -17,28 +17,28 @@ class InstallCommand(Command):
     If the version is not specified, the latest version will be selected.
 
     Outdated versions will be replaced.
-    '''
+    """
     name = 'install'
 
     arguments = [
         Arg('requirements', nargs='+',
-            help='requirements to install '
+            help="requirements to install "
                  '("name", "name>=1.0", "name==1.2", ...)'),
 
         Arg('-H', '--held', action='store_true',
-            help='allow updating held mods'),
+            help="allow updating held mods"),
 
         Arg('-R', '--reinstall', action='store_true',
-            help='allow reinstalling mods'),
+            help="allow reinstalling mods"),
 
         Arg('-D', '--downgrade', action='store_true',
-            help='allow downgrading mods'),
+            help="allow downgrading mods"),
 
         Arg('-U', '--unpack', action='store_true', default=None,
-            help='unpack mods zip files'),
+            help="unpack mods zip files"),
 
         Arg('-d', '--no-deps', action='store_true',
-            help='do not install any dependencies'),
+            help="do not install any dependencies"),
     ]
 
     def run(self, args):
@@ -61,8 +61,8 @@ class InstallCommand(Command):
                 continue
 
             if not args.held and req.name in self.config.hold:
-                print('%s is held. '
-                      'Use -H to install it anyway.' % (req.name))
+                print("%s is held. "
+                      "Use -H to install it anyway." % (req.name))
                 continue
 
             local_mod = self.manager.get_mod(req.name)
@@ -73,15 +73,15 @@ class InstallCommand(Command):
                     release_ver = Version(release.version)
 
                     if not args.reinstall and release_ver == local_ver:
-                        print('%s==%s is already installed. '
-                              'Use -R to reinstall it.' % (
+                        print("%s==%s is already installed. "
+                              "Use -R to reinstall it." % (
                                   local_mod.name, local_ver))
                         break
 
                     elif not args.downgrade and release_ver < local_ver:
                         print(
-                            '%s is already installed in a more recent version.'
-                            ' Use -D to downgrade it.' % (
+                            "%s is already installed in a more recent version."
+                            " Use -D to downgrade it." % (
                                 local_mod.name
                             )
                         )
@@ -111,7 +111,7 @@ class InstallCommand(Command):
                         if self.config.game_version in depreq.specifier:
                             continue
                         else:
-                            print('%s is incompatible with game version %s' % (
+                            print("%s is incompatible with game version %s" % (
                                 depreq, self.config.game_version,
                             ))
                             deps_ok = False
@@ -129,18 +129,18 @@ class InstallCommand(Command):
                             )
                         )
                     except ModNotFoundError:
-                        print('Dependency not found: %s' % depreq.name)
+                        print("Dependency not found: %s" % depreq.name)
                         deps_ok = False
                         break
 
                     if not rels:
-                        print('Dependency can not be met: %s' % depreq)
+                        print("Dependency can not be met: %s" % depreq)
                         deps_ok = False
                         break
 
                     # FIXME: we only try the first release here
                     deprel = rels[0]
-                    print('Adding dependency: %s %s' % (
+                    print("Adding dependency: %s %s" % (
                         depreq.name, deprel.version
                     ))
                     deps_to_install.append((depreq.name, deprel))
@@ -150,11 +150,11 @@ class InstallCommand(Command):
                     to_install.append((name, release))
                     break
             else:
-                print('No match found for %s' % (req,))
+                print("No match found for %s" % (req,))
                 continue
 
         for name, release in to_install:
-            print('Installing: %s %s...' % (
+            print("Installing: %s %s..." % (
                 name, release.version
             ))
 

@@ -21,7 +21,7 @@ class InstallCommand(Command):
     name = 'install'
 
     arguments = [
-        Arg('requirements', nargs='+',
+        Arg('requirements', nargs='*',
             help="requirements to install "
                  '("name", "name>=1.0", "name==1.2", ...)'),
 
@@ -41,8 +41,14 @@ class InstallCommand(Command):
             help="do not install any dependencies"),
     ]
 
+    def install(self, args, name, release):
+        print("Installing: %s %s..." % (
+            name, release.version
+        ))
+
+        self.manager.install_mod(name, release, unpack=args.unpack)
+
     def run(self, args):
-        # TODO: handle optional dependencies
         to_install = []
 
         for req in args.requirements:
@@ -87,75 +93,74 @@ class InstallCommand(Command):
                         )
                         break
 
-                # FIXME: deps are currently ignored because the API doesn't
-                # expose them anymore
-
-                deps = []
-
-                if not args.no_deps:
-                    try:
-                        deps = release.info_json.dependencies
-                    except AttributeError:
-                        pass
-
-                deps_to_install = []
-                deps_ok = True
-
-                for dep in deps:
-                    depreq = parse_requirement(dep)
-
-                    if depreq.name.startswith('?'):
-                        continue  # ignore optional dependency
-
-                    if depreq.name == 'base':
-                        if self.config.game_version in depreq.specifier:
-                            continue
-                        else:
-                            print("%s is incompatible with game version %s" % (
-                                depreq, self.config.game_version,
-                            ))
-                            deps_ok = False
-                            break
-
-                    if self.manager.resolve_local_requirement(
-                            depreq,
-                            ignore_game_ver=args.ignore_game_ver):
-                        continue
-                    try:
-                        rels = start_iter(
-                            self.manager.resolve_remote_requirement(
-                                depreq,
-                                ignore_game_ver=args.ignore_game_ver
-                            )
-                        )
-                    except ModNotFoundError:
-                        print("Dependency not found: %s" % depreq.name)
-                        deps_ok = False
-                        break
-
-                    if not rels:
-                        print("Dependency can not be met: %s" % depreq)
-                        deps_ok = False
-                        break
-
-                    # FIXME: we only try the first release here
-                    deprel = rels[0]
-                    print("Adding dependency: %s %s" % (
-                        depreq.name, deprel.version
-                    ))
-                    deps_to_install.append((depreq.name, deprel))
-
-                if deps_ok:
-                    to_install += deps_to_install
-                    to_install.append((name, release))
-                    break
+                to_install.append((name, release))
+                break
             else:
                 print("No match found for %s" % (req,))
                 continue
 
         for name, release in to_install:
-            print("Installing: %s %s..." % (
-                name, release.version
-            ))
+            self.install(args, name, release)
 
-            self.manager.install_mod(name, release, unpack=args.unpack)
+        if not args.no_deps:
+            self.install_deps(args)
+
+    def install_deps(self, args):
+        deps = []
+
+        for mod in self.manager.find_mods():
+            try:
+                deps += mod.info.dependencies
+            except AttributeError:
+                pass
+
+        deps_to_install = []
+        deps_ok = True
+
+        for dep in deps:
+            depreq = parse_requirement(dep)
+
+            if depreq.name == 'base':
+                continue  # ignore it since it's not like we can install it
+
+            if depreq.name.startswith('?'):
+                continue  # ignore optional dependency
+
+            if self.manager.resolve_local_requirement(
+                    depreq,
+                    ignore_game_ver=args.ignore_game_ver):
+                continue
+            try:
+                # FIXME: we only try the first release here
+                release = next(
+                    self.manager.resolve_remote_requirement(
+                        depreq,
+                        ignore_game_ver=args.ignore_game_ver
+                    )
+                )
+            except ModNotFoundError:
+                print("Dependency not found: %s" % depreq.name)
+                deps_ok = False
+                break
+
+            if not release:
+                print("Dependency can not be met: %s" % depreq)
+                deps_ok = False
+                break
+
+            if (depreq.name, release) not in deps_to_install:
+                print("Adding dependency: %s %s" % (
+                    depreq.name, release.version
+                ))
+                deps_to_install.append((depreq.name, release))
+
+        if not deps_ok:
+            return
+
+        if deps_to_install:
+            print("Installing missing dependencies...")
+            for name, release in deps_to_install:
+                self.install(args, name, release)
+
+            # we may have added new sub-dependencies
+            self.install_deps(args)

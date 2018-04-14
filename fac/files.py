@@ -14,9 +14,12 @@ __all__ = ['Config', 'JSONFile']
 FACTORIO_SEARCH_PATHS = [
     '.',
     os.path.join('.', 'factorio'),
+    os.path.join('.', 'Factorio'),
     '..',
     os.path.join('..', 'factorio'),
+    os.path.join('..', 'Factorio'),
     user_data_dir('factorio', appauthor=False),
+    user_data_dir('Factorio', appauthor=False),
     os.path.join(
         user_data_dir('Steam', appauthor=False),
         os.path.join('SteamApps', 'common', 'Factorio'),
@@ -35,13 +38,26 @@ if sys.platform.startswith('win32'):
 elif sys.platform.startswith('linux'):
     FACTORIO_SEARCH_PATHS += [
         '~/factorio',
+        '~/Factorio',
         '~/.factorio',
         '/usr/share/factorio/',
     ]
 else:
     FACTORIO_SEARCH_PATHS += [
         '~/factorio',
+        '~/Factorio',
+        '~/.factorio',
         '/Applications/factorio.app/Contents',
+        os.path.join(
+            user_data_dir('Steam', appauthor=False),
+            os.path.join('SteamApps', 'common', 'Factorio',
+                         'factorio.app', 'Contents'),
+        ),
+        os.path.join(
+            user_data_dir('Steam', appauthor=False),
+            os.path.join('steamapps', 'common', 'Factorio',
+                         'factorio.app', 'Contents'),
+        ),
     ]
 
 

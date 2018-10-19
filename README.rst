@@ -2,7 +2,7 @@ fac
 ===
 
 
-`fac` is a command-line mod manager for Factorio >=0.13 written in Python 3.
+``fac`` is a command-line mod manager for Factorio >=0.13 written in Python 3.
 
 .. contents::
    :depth: 1
@@ -33,10 +33,10 @@ Or from an existing clone:
 
 
 *NOTE (Linux users)*: By default, these commands will require you to be root unless you
-run `pip` from a virtualenv or you use the ``--user`` flag.
+run ``pip`` from a virtualenv or you use the ``--user`` flag.
 
-If you run `pip` with the ``--user`` flag, make sure ``~/.local/bin`` is in your `PATH`
-or the `fac` command will not work.
+If you run ``pip`` with the ``--user`` flag, make sure ``~/.local/bin`` is in your ``PATH``
+or the ``fac`` command will not work.
 
 
 Configuration
@@ -78,7 +78,7 @@ You can display the currently detected locations using ``fac -v``:
 Usage
 -----
 
-`fac` can be run using the `fac` command.
+``fac`` can be run using the ``fac`` command.
 It is further divided into several subcommands:
 
 .. code::
@@ -237,7 +237,7 @@ Updating mods
 
 Holding mods
 ------------
-Use this to keep mods from being automatically updated when using the `update` command.
+Use this to keep mods from being automatically updated when using the ``update`` command.
 
 .. code::
 
@@ -279,7 +279,7 @@ Removing mods
 Packing/unpacking mods
 ----------------------
 
-Mods can be either packed (`name_0.1.zip`) or unpacked (`name_0.1/`) and the game will 
+Mods can be either packed (``name_0.1.zip``) or unpacked (``name_0.1/``) and the game will 
 accept both of them.
 
 Keep in mind that the game will refuse to start if there is both a packed and unpacked
@@ -326,7 +326,7 @@ Mod name autocorrection
 
 Most commands will try to guess the correct name when given inexact mod names.
 
-If the name is a filter (e.g. `5dim_*`), no attempt to autocorrect will be made.
+If the name is a filter (e.g. ``5dim_*``), no attempt to autocorrect will be made.
 
 The following attempts are made to find a match for a given mod name:
 
@@ -339,9 +339,9 @@ For remote commands, a local match will first be attempted at each step.
 
 For instance:
 
-- `yarm` will be converted to `YARM` via the *Case-insensitive match* strategy
-- `ya` will either be converted to `YARM` if you have YARM installed
-  or fail because there is more than one result to the `fac search ya` command.
+- ``yarm`` will be converted to ``YARM`` via the *Case-insensitive match* strategy
+- ``ya`` will either be converted to ``YARM`` if you have YARM installed
+  or fail because there is more than one result to the ``fac search ya`` command.
 
 Game version incompatibilities
 ------------------------------
@@ -349,20 +349,20 @@ Game version incompatibilities
 Mods are tied to a specific Factorio version (e.g. 0.13, 0.14) and can only work
 with that version. A 0.14 game will refuse to load a mod made for 0.13.
 
-By default, `fac` will autodetect your installed Factorio version and use that to filter
+By default, ``fac`` will autodetect your installed Factorio version and use that to filter
 the available commands to compatible mods.
 
 In some cases, you might want to disable this filtering using the ``-i`` option.
 You can also override the detected game version using ``-g 0.13`` for instance.
 
-A `make-compatible` command is provided. It will automatically unpack a mod and change
-its `factorio_version` field to the currently set game version
-(autodetected or provided by the `-g` option).
+A ``make-compatible`` command is provided. It will automatically unpack a mod and change
+its ``factorio_version`` field to the currently set game version
+(autodetected or provided by the ``-g`` option).
 
 Usage scenario
 ~~~~~~~~~~~~~~
 
-You're currently running Factorio 0.14 and want to install your favorite mod, `YARM`:
+You're currently running Factorio 0.14 and want to install your favorite mod, ``YARM``:
 
 .. code::
 
@@ -397,7 +397,7 @@ ZSH completion script
 If you're using ZSH (and you should be!) you can install the provided completion script
 for a better experience.
 
-You'll need to add the `zsh` directory to your `fpath` using something like this in
+You'll need to add the ``zsh`` directory to your ``fpath`` using something like this in
 your ``.zshrc`` :
 
 .. code::
@@ -413,25 +413,25 @@ With ``pip --user``, you'll need to add this in your ``.zshrc`` :
 
     fpath+=(~/.local/share/zsh/site-functions)
 
-Note: ``compinit`` must be called after `fpath` is changed so you must either put your changes before
-``compinit`` or add another ``compinit`` call after changing `fpath`.
+Note: ``compinit`` must be called after ``fpath`` is changed so you must either put your changes before
+``compinit`` or add another ``compinit`` call after changing ``fpath``.
 
 Changelog
 ---------
 
 0.9
     - Known issues:
-        - `search` command will list all existing mods regardless of the search criteria.
+        - ``search`` command will list all existing mods regardless of the search criteria.
           This shall be addressed in a future release.
 
     - Compatibility with the new mod portal
     - Fix mod install failure across filesystems
-    - Search for Factorio installation in lowercase `steamapps` directory as well
+    - Search for Factorio installation in lowercase ``steamapps`` directory as well
     - Don't follow symbolic links when packing/unpacking mods
 
 0.8
     - Added automatic retries of network requests to the API
-    - Added pagination options to `search` command:
+    - Added pagination options to ``search`` command:
 
       - ``-p, --page``: starting page number for the API calls
       - ``-s, --page-size``: maximum number of returned results per page
@@ -445,30 +445,30 @@ Changelog
     - Fixed "AttributeError: 'ZippedMod' object has no attribute 'factorio_version'" (#8)
 
 0.6
-    - Added ``-F, --format`` to `list` and `show` commands.
-    - Added ``-I, --include`` and ``-E, --exclude`` to `list` commands.
+    - Added ``-F, --format`` to ``list`` and ``show`` commands.
+    - Added ``-I, --include`` and ``-E, --exclude`` to ``list`` commands.
     - Added ``-m, --mods-directory`` option to use a specific mods directory.
     - Added fac version to output when using ``-v, --verbose``.
     - Improved ZSH completion script.
-    - Fixed `write-path` and `data-path` being ignored from config.ini
-    - Fixed `search` command format string argument.
+    - Fixed ``write-path`` and ``data-path`` being ignored from config.ini
+    - Fixed ``search`` command format string argument.
     - Fixed options parsing to allow general options anywhere in the command line.
 
 0.5
     - Added workaround for 0.14 mods being considered as 0.13 mods.
     - Added a ZSH completion script.
-    - Added ``-F, --format`` option to `search` command to customize the output format using format strings.
+    - Added ``-F, --format`` option to ``search`` command to customize the output format using format strings.
     - Various bug fixes.
 
 0.4
-    - New `pack` and `unpack` commands to work on unpacked mods.
-    - New `fetch` command to fetch a mod without installing it.
-    - New `make-compatible` command to bump the `factorio_version` of an installed mod.
-    - New ``-l, --limit`` option to the `search` command.
+    - New ``pack`` and ``unpack`` commands to work on unpacked mods.
+    - New ``fetch`` command to fetch a mod without installing it.
+    - New ``make-compatible`` command to bump the ``factorio_version`` of an installed mod.
+    - New ``-l, --limit`` option to the ``search`` command.
     - New ``-g, --game-version`` option to override the detected game version.
     - New ``-i, --ignore-game-ver`` flag to ignore the current game version.
     - Removed ``--force`` flag in favor of the more specific ``-R, --reinstall``, ``-D, --downgrade``, ``-H, --held``.
-    - Accept patterns in `enable`, `pack`, `hold` commands.
+    - Accept patterns in ``enable``, ``pack``, ``hold`` commands.
     - Resolve partial mod names.
     - Various bug fixes.
 

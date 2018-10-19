@@ -2,7 +2,7 @@ fac
 ===
 
 
-`Fac` is a command-line mod manager for Factorio >=0.13 written in Python 3.
+`fac` is a command-line mod manager for Factorio >=0.13 written in Python 3.
 
 .. contents::
    :depth: 1
@@ -13,7 +13,7 @@ Installation
 You'll need Python 3, which can be obtained through your distribution's
 package manager or downloaded from https://www.python.org/ (for Windows users).
 
-Installation can be easilly done using pip:
+Installation can be easily done using pip:
 
 .. code::
 
@@ -32,7 +32,7 @@ Or from an existing clone:
     $ pip3 install -e .
 
 
-*NOTE (linux users)*: By default, these commands will require you to be root unless you
+*NOTE (Linux users)*: By default, these commands will require you to be root unless you
 run `pip` from a virtualenv or you use the ``--user`` flag.
 
 If you run `pip` with the ``--user`` flag, make sure ``~/.local/bin`` is in your `PATH`
@@ -44,11 +44,11 @@ Configuration
 
 fac needs to be able to know the location of:
 
-- The Factorio data directory, eg ``/usr/share/factorio/``
-- The Factorio configuration directory, eg ``~/.factorio``
+- The Factorio data directory, e.g. ``/usr/share/factorio/``
+- The Factorio configuration directory, e.g. ``~/.factorio``
 
 Normally, it should be able to detect these automatically assuming you have a standard
-setup (eg. Steam).
+setup (e.g. Steam).
 It will also look in the current working directory and its parent.
 
 If for some reason these paths can't be found automatically, you'll have to specify
@@ -101,7 +101,7 @@ It is further divided into several subcommands:
         pack                Pack mods.
         unpack              Unpack mods.
         fetch               Fetch a mod from the mod portal.
-        make-compatible     Change the supported factorio version of mods.
+        make-compatible     Change the supported Factorio version of mods.
 
     general options:
       -g GAME_VERSION, --game-version GAME_VERSION
@@ -173,7 +173,7 @@ Searching for mods
     [...]
 
 
-Showing detailled info about a mod
+Showing detailed info about a mod
 ----------------------------------
 
 .. code::
@@ -301,7 +301,7 @@ version of a mod, or if there are multiple installed versions for any given mod.
 Using wildcards
 ---------------
 
-Commands that work on locally installed mods can accept wildcards, eg:
+Commands that work on locally installed mods can accept wildcards, e.g.:
 
 .. code::
 
@@ -326,7 +326,7 @@ Mod name autocorrection
 
 Most commands will try to guess the correct name when given inexact mod names.
 
-If the name is a filter (eg `5dim_*`), no attempt to autocorrect will be made.
+If the name is a filter (e.g. `5dim_*`), no attempt to autocorrect will be made.
 
 The following attempts are made to find a match for a given mod name:
 
@@ -346,10 +346,10 @@ For instance:
 Game version incompatibilities
 ------------------------------
 
-Mods are tied to a specific factorio version (eg 0.13, 0.14) and can only work
+Mods are tied to a specific Factorio version (e.g. 0.13, 0.14) and can only work
 with that version. A 0.14 game will refuse to load a mod made for 0.13.
 
-By default, `fac` will autodetect your installed factorio version and use that to filter
+By default, `fac` will autodetect your installed Factorio version and use that to filter
 the available commands to compatible mods.
 
 In some cases, you might want to disable this filtering using the ``-i`` option.
@@ -421,7 +421,7 @@ Changelog
 
 0.9
     - Known issues:
-        - `search` command will list all existing mods regardless of the search critera.
+        - `search` command will list all existing mods regardless of the search criteria.
           This shall be addressed in a future release.
 
     - Compatibility with the new mod portal
@@ -467,7 +467,7 @@ Changelog
     - New ``-l, --limit`` option to the `search` command.
     - New ``-g, --game-version`` option to override the detected game version.
     - New ``-i, --ignore-game-ver`` flag to ignore the current game version.
-    - Removed ``--force`` flag in favor of the more specfic ``-R, --reinstall``, ``-D, --downgrade``, ``-H, --held``.
+    - Removed ``--force`` flag in favor of the more specific ``-R, --reinstall``, ``-D, --downgrade``, ``-H, --held``.
     - Accept patterns in `enable`, `pack`, `hold` commands.
     - Resolve partial mod names.
     - Various bug fixes.

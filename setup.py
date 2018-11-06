@@ -1,7 +1,8 @@
 from setuptools import setup
 
-with open('README.rst', 'r', encoding='utf-8') as f:
-    long_description = f.read()
+import codecs
+with codecs.open('README.rst', 'r', 'utf-8') as f:
+    long_description = f.read() 
 
 setup(
     name='fac-cli',

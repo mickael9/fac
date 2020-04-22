@@ -61,10 +61,9 @@ class UpdateCommand(Command):
                     print("%s is held. "
                           "Use -H to update it anyway." %
                           local_mod.name)
-                    break
+                    continue
 
                 updates.append((local_mod, release))
-                break
 
         if not updates:
             print("No updates were found")

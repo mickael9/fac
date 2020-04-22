@@ -11,3 +11,4 @@ import fac.commands.hold
 import fac.commands.pack
 import fac.commands.fetch
 import fac.commands.make_compatible
+import fac.commands.clean

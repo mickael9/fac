@@ -34,6 +34,7 @@ if sys.platform.startswith('win32'):
     FACTORIO_SEARCH_PATHS += [
         r'%APPDATA%\factorio',
         r'C:\Program Files (x86)\Steam\SteamApps\common\factorio',
+        r'C:\Program Files\Factorio',
     ]
 elif sys.platform.startswith('linux'):
     FACTORIO_SEARCH_PATHS += [

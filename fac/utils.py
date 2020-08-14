@@ -85,7 +85,7 @@ def prompt(prompt="Continue?", choices="Y/n"):
 
 
 REQUIREMENT_RE = re.compile(
-    r'^(?P<name>[^<>=!]+)'
+    r'^(?P<name>[^<>=]+)'
     r'(?P<specifier>(?:==|!=|>=?|<=?).*)?$'
 )
 

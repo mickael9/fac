@@ -126,6 +126,12 @@ class InstallCommand(Command):
             if depreq.name.startswith('?'):
                 continue  # ignore optional dependency
 
+            if depreq.name.startswith('(?)'):
+                continue  # ignore optional dependency
+
+            if depreq.name.startswith('!'):
+                continue  # ignore incompatible dependency
+
             if self.manager.resolve_local_requirement(
                     depreq,
                     ignore_game_ver=args.ignore_game_ver):

@@ -380,6 +380,7 @@ class ModManager:
         except AttributeError:
             raise ModNotFoundError(mod_name)
 
+        latest = None
         if match_game_version(mod.latest_release, game_version):
             latest = mod.latest_release
             yield latest
@@ -388,7 +389,7 @@ class ModManager:
         res = [release
                for release in mod.releases
                if match_game_version(release, game_version)
-               and release.version != latest.version]
+               and (latest and release.version != latest.version)]
 
         res.sort(key=lambda r: Version(r.version), reverse=True)
         yield from res
